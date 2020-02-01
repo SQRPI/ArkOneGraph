@@ -20,9 +20,10 @@ from utils import required_dct, owned_dct
 if True:
     prst = '1111111010' if __name__ == '__main__' else '0000110010'
     print_output = True if __name__ == '__main__' else False
-    mp = MaterialPlanning(filter_stages=['S4-4', 'S4-6'] + ['AF-'+x for x in '12345678'],
+    update = False if __name__ == '__main__' else True
+    mp = MaterialPlanning(filter_stages=['S4-4'] + ['AF-'+x for x in '12345678'],
                           filter_freq=1,
-                          update=False,
+                          update=update,
                           banned_stages={},
 #                          expValue=30,                 #1224更新后此参数无效, 使用经验需求来调节经验价值
                           printSetting=prst,    #参照上面Print_functions的顺序设置, 1输出, 0不输出

@@ -4,6 +4,7 @@ from scipy.optimize import linprog
 from utils import Price, Credit, HeYue, HYO, 凝胶_group, 凝胶_update, 炽合金_group, 炽合金_update
 from collections import defaultdict as ddict
 import pandas as pd
+from bson.decimal128 import Decimal128
 
 global penguin_url
 penguin_url = 'https://penguin-stats.io/PenguinStats/api/'
@@ -62,6 +63,7 @@ class MaterialPlanning(object):
         self.display_main_only = display_main_only
         self.stage_times = ddict(int)
         self.Notes = dict()
+        self.best_stage = dict()
 
         self.base_exp = base_exp
         self.base_gold = base_gold
@@ -413,7 +415,7 @@ class MaterialPlanning(object):
                 self.values[int(self.item_id_array[i][-1])-1]['items'].append(item_value)
         self.item_value['寻访凭证'] = self.costLimit * 600 / 180
         self.item_value['芯片助剂'] = self.item_value['采购凭证'] * 90
-        self.item_value['招聘许可'] = (20*self.公招出四星的概率+10)*0.774+38/258*600/180*self.costLimit*self.公招出四星的概率 - self.item_value['龙门币']*774
+        self.item_value['招聘许可'] = (20*self.公招出四星的概率+10)*self.item_value['糖组']/Price['糖组']+38/258*600/180*self.costLimit*self.公招出四星的概率 - self.item_value['龙门币']*774
 
         for group in self.values:
             group["items"] = sorted(group["items"], key=lambda k: float(k['value']), reverse=True)
@@ -442,44 +444,50 @@ class MaterialPlanning(object):
                                 'effect':           self.effect[stage]
                             }
 
+    def to_Decimal128_2f(self, num: int):
+        return Decimal128('%.2f'%num)
+
+    def stage_class(self, effect):
+        if effect>0.99:
+            return 'lowest_ap_stages'
+        if effect>0.90:
+            return 'balanced_stages'
+        return 'drop_rate_first_stages'
+
     def output_best_stage(self, level='x'):
+        '''
+        筛选条件:  效率>0.99, 期望<1.2*最低期望
+        效率<0.99, 掉率>当前最大掉率
+        效率<0.99, 期望<当前最低期望
+        '''
         self.merge_droprate()
         for item in self.item_array:
-            if len(self.item_id_array[self.item_dct_rv[item]]) != 5:
+            if len(self.item_id_array[self.item_dct_rv[item]]) != 5 or item == '芯片助剂':
                 continue
             itemLevel = self.item_id_array[self.item_dct_rv[item]][-1]
             if itemLevel != level:
                 continue
-            Max999 = {'Name': '', 'Cost': 1e9, 'dr': 0}
-            Max000 = {'Name': '', 'Cost': 1e9, 'dr': 0}
-            for stage, values in self.droprate[item].items():
-                dr = values['droprate']
-                ec = values['expected_cost']
-                ef = values['effect']
-                if ef > 0.99 and ec < Max999['Cost']:
-                    Max999 = {'Name': stage, 'Cost': ec, 'dr': dr, 'ef': ef}
-                if ef > 0.000 and ec < Max000['Cost']:
-                    Max000 = {'Name': stage, 'Cost': ec, 'dr': dr, 'ef': ef}
-            if Max999['Name'] != '':
-                print(
-                    '\n%s: \n最高效率 %s\t掉率 %.1f 期望理智 %.1f\t效率 %.4f\n最高掉落 %s\t掉率 %.1f 期望理智 %.1f\t效率 %.4f\n'\
-                    % (item, Max999['Name'], Max999['dr']*100, Max999['Cost'], Max999['ef'],
-                       Max000['Name'], Max000['dr']*100, Max000['Cost'], Max000['ef'])
-                        )
-#                self.output_main_drop(Max999['Name'])
-                for stage, values in self.droprate[item].items():
-                    dr = values['droprate']
-                    ec = values['expected_cost']
-                    ef = values['effect']
-                    if ec/ef < Max999['Cost'] or (ef>0.95 and (dr>Max999['dr']*0.5 or ec<Max999['Cost']*3)):
-                        print('%s: \t掉率 %.1f 期望理智 %.1f\t效率 %.4f\t GATE %.1f'% (stage, dr*100, ec, ef, ec/ef))
-                        self.output_main_drop(stage)
-#            else:
-#                print(
-#                    '\n%s: \n 最高掉落 %s\t掉率 %.1f 期望理智 %.1f\t效率 %.4f\n'\
-#                    % (item,
-#                       Max000['Name'], Max000['dr']*100, Max000['Cost'], Max000['ef'])
-#                        )
+
+            self.best_stage[item] = ddict(list)
+            # 根据效率排序
+            sorted_stages = sorted(self.droprate[item].items(), key=lambda x: x[1]['effect'], reverse=True)
+            maxDropRate = max([x['droprate'] for x in self.droprate[item].values() if x['effect'] > 0.99]+[0.1])*0.8
+            minExpect = min([x['expected_cost'] for x in self.droprate[item].values() if x['effect'] > 0.99]+[200])*1.25
+            print(item, minExpect, maxDropRate)
+            for stage, data in sorted_stages:
+                if (data['droprate'] >= 1.25*maxDropRate) or\
+                   (data['expected_cost'] <= 0.8*minExpect) or\
+                   (data['effect'] > 0.99 and data['droprate'] > 0.8*maxDropRate and level=='3')or\
+                   (data['effect'] > 0.99 and data['droprate'] > maxDropRate):
+                    maxDropRate = max(maxDropRate, data['droprate'])
+                    minExpect = min(minExpect, data['expected_cost'])
+                    self.best_stage[item][self.stage_class(data['effect'])].append({
+                            'code': stage,
+                            'drop_rate': self.to_Decimal128_2f(data['droprate']),
+                            'efficiency': self.to_Decimal128_2f(data['effect']),
+                            'ap_per_item': self.to_Decimal128_2f(data['expected_cost']),
+                            'extra_drop': list(self.output_main_drop(stage, item))
+                            })
 
     def output_droprate(self, stage):
         assert stage in self.stage_array
@@ -547,16 +555,21 @@ class MaterialPlanning(object):
                 if stage['stage'] not in ['LS-5', 'CE-5']:
                     display_lst = display_lst[1:] + [display_lst[0]]
                 print(stage['stage'] + '(%s 次) ===> '%stage['count']
-                + ', '.join(display_lst))
+                                     + ', '.join(display_lst))
 
-    def output_main_drop(self, stage_name, gate=0.1):
+    def output_main_drop(self, stage_name, target_item, gate=0.1):
         stageID = self.stage_dct_rv[stage_name]
         farm_cost = self.farm_cost[stageID]
         itemPercentage = [(self.item_value[self.item_array[k]]*v/farm_cost, self.item_array[k])
                             for k,v in enumerate(self.probs_matrix[stageID])]
         display_lst = [x for x in sorted(itemPercentage, key=lambda x:x[0], reverse=True) if x[0] > gate]
+
         for value, item in display_lst:
-            sys.stdout.write('%.3f\t%s\n' % (value, item))
+#            sys.stdout.write('%.3f\t%s\n' % (value, item))
+            if item != target_item:
+                if item == '初级作战记录': item = '基础作战记录'
+                if item == '龙门币': continue
+                yield self.item_name_to_id[item]
 
     def output_items(self):
         print('\nSynthesize following items:')
