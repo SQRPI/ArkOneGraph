@@ -34,7 +34,7 @@ if True:
                           base_MTL_GOLD3=0,
                           base_gold=0,
                           stone_per_day=0,
-                          display_main_only=True
+                          display_main_only=False
                           )
 
 #    mpr = MPR()

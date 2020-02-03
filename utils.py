@@ -69,7 +69,8 @@ gold_required = {
 required_dct.update({
                         '经验': sum(v*exp_required[k] for k, v in figureCount.items()),
                         '龙门币': sum(v*gold_required[k] for k, v in figureCount.items()),
-                        '家具零件': 10000
+                        '家具零件': 10000,
+                        '采购凭证': 1000
                     })
 #required_dct.update({
 #                        '经验': 0,

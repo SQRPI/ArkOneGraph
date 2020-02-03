@@ -11,7 +11,7 @@ import json
 from bson.decimal128 import Decimal128
 
 print('正在更新数据库...')
-dbclient = pymongo.MongoClient('SERVER')
+dbclient = pymongo.MongoClient('mongodb+srv://sqrpi:Sqrpi177245385@cluster0-b47ua.mongodb.net/test?authSource=admin&replicaSet=Cluster0-shard-0&readPreference=primary&appname=MongoDB%20Compass%20Community&ssl=true')
 db = dbclient['Arknights_OneGraph']
 
 db_Material, db_Stage = db['Material'], db['Stage']
