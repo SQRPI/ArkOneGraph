@@ -354,7 +354,7 @@ class MaterialPlanning(object):
             stage_name = self.stage_array[i]
             if stage_name[:2] in ['SK', 'AP', 'CE', 'LS', 'PR'] and self.display_main_only:
                 continue
-            target_items = np.where(self.probs_matrix[i]>0.2)[0]
+            target_items = np.where(self.probs_matrix[i]>0.01)[0]
             items = {self.item_array[idx]: float2str(self.probs_matrix[i, idx]*t)
             for idx in target_items if len(self.item_id_array[idx])<=5}
             stage = {
@@ -473,7 +473,6 @@ class MaterialPlanning(object):
             sorted_stages = sorted(self.droprate[item].items(), key=lambda x: x[1]['effect'], reverse=True)
             maxDropRate = max([x['droprate'] for x in self.droprate[item].values() if x['effect'] > 0.99]+[0.1])*0.8
             minExpect = min([x['expected_cost'] for x in self.droprate[item].values() if x['effect'] > 0.99]+[200])*1.25
-            print(item, minExpect, maxDropRate)
             for stage, data in sorted_stages:
                 if (data['droprate'] >= 1.25*maxDropRate) or\
                    (data['expected_cost'] <= 0.8*minExpect) or\
@@ -551,7 +550,8 @@ class MaterialPlanning(object):
         print('Loot at following stages:')
         for stage in self.stages:
             if float(stage['count']) > 1:
-                display_lst = [k + '(%s) '%v for k, v in sorted(stage['items'].items(), key=lambda x: float(x[1]), reverse=True)]
+#                print(stage['items'])
+                display_lst = [k + '(%s) '%v for k, v in sorted(stage['items'].items(), key=lambda x: (float(x[1])*self.item_value[x[0]]), reverse=True)][:5]
                 if stage['stage'] not in ['LS-5', 'CE-5']:
                     display_lst = display_lst[1:] + [display_lst[0]]
                 print(stage['stage'] + '(%s 次) ===> '%stage['count']
@@ -569,7 +569,7 @@ class MaterialPlanning(object):
             if item != target_item:
                 if item == '初级作战记录': item = '基础作战记录'
                 if item == '龙门币': continue
-                yield self.item_name_to_id[item]
+                yield {'name': item, 'id': self.item_name_to_id[item]}
 
     def output_items(self):
         print('\nSynthesize following items:')
