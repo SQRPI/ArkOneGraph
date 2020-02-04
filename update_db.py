@@ -7,7 +7,6 @@ Created on Tue Jan 28 14:13:20 2020
 
 import pymongo
 from main import mp
-import json
 from bson.decimal128 import Decimal128
 
 print('正在更新数据库...')

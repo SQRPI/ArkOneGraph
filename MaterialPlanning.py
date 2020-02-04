@@ -471,13 +471,14 @@ class MaterialPlanning(object):
             self.best_stage[item] = ddict(list)
             # 根据效率排序
             sorted_stages = sorted(self.droprate[item].items(), key=lambda x: x[1]['effect'], reverse=True)
-            maxDropRate = max([x['droprate'] for x in self.droprate[item].values() if x['effect'] > 0.99]+[0.1])*0.8
-            minExpect = min([x['expected_cost'] for x in self.droprate[item].values() if x['effect'] > 0.99]+[200])*1.25
+            maxDropRate = max([x['droprate'] for x in self.droprate[item].values() if x['effect'] > 0.99]+[0.1])
+            minExpect = min([x['expected_cost'] for x in self.droprate[item].values() if x['effect'] > 0.99]+[200])
             for stage, data in sorted_stages:
                 if (data['droprate'] >= 1.25*maxDropRate) or\
                    (data['expected_cost'] <= 0.8*minExpect) or\
                    (data['effect'] > 0.99 and data['droprate'] > 0.8*maxDropRate and level=='3')or\
-                   (data['effect'] > 0.99 and data['droprate'] > maxDropRate):
+                   (data['effect'] > 0.99 and data['expected_cost'] <1.25*minExpect and level=='3')or\
+                   (data['effect'] > 0.99 and data['droprate'] >= 0.95*maxDropRate):
                     maxDropRate = max(maxDropRate, data['droprate'])
                     minExpect = min(minExpect, data['expected_cost'])
                     self.best_stage[item][self.stage_class(data['effect'])].append({
