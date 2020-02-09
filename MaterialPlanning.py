@@ -113,7 +113,7 @@ class MaterialPlanning(object):
                             '3271': '辅助芯片', '3272': '辅助芯片组', '3273': '辅助双芯片',
                             '3281': '特种芯片', '3282': '特种芯片组', '3283': '特种双芯片',
                             '4006': '采购凭证', '7003': '寻访凭证', '32001': '芯片助剂',
-                            '7001': '招聘许可'
+                            '7001': '招聘许可', '99990': '岁过华灯'
                             }
         item_dct = {}
         stage_dct = {}
@@ -140,7 +140,7 @@ class MaterialPlanning(object):
 
 
         # To construct mapping from stage id to stage names and vice versa.
-        self.stage_array = [x+'-'+y for x in ['LS', 'CE'] for y in '12345']
+        self.stage_array =[x+'-'+y for x in ['LS'] for y in '12345']
         for k,v in stage_dct.items():
             if v not in self.banned_stages:
                 self.stage_array.append(v)
@@ -149,14 +149,17 @@ class MaterialPlanning(object):
 
         # To format dropping records into sparse probability matrix
         self.cost_lst = np.zeros(len(self.stage_array))
-        self.update_stage()
-        self.probs_matrix = np.zeros([len(self.stage_array), len(item_array)])
 
+        self.update_stage()
         self.stage_array = np.array(self.stage_array)
+        self.probs_matrix = np.zeros([len(self.stage_array), len(item_array)])
 
         for dct in material_probs['matrix']:
             try:
-                float(dct['item']['itemId'])
+#                float(dct['item']['itemId'])
+#                print(dct['stage']['code'])
+#                if dct['stage']['code'] == 'CE-5':
+#                    print(dct)
                 self.probs_matrix[self.stage_dct_rv[dct['stage']['code']], self.item_dct_rv[dct['item']['name']]] = dct['quantity']/float(dct['times'])
 
                 self.cost_lst[self.stage_dct_rv[dct['stage']['code']]] = dct['stage']['apCost']
@@ -164,9 +167,10 @@ class MaterialPlanning(object):
                 pass
 
         # 添加LS, CE, S4-6, S5-2的掉落
-        self.cost_lst[0:10] = [10,15,20,25,30,10,15,20,25,30]
+        self.cost_lst[0:5] = [10,15,20,25,30]
 #        self.cost_lst[self.stage_dct_rv['1-7']] = 9
         for k, stage in enumerate(self.stage_array):
+            print(stage)
             self.probs_matrix[k, self.item_dct_rv['龙门币']] = self.cost_lst[k]*12
         self.update_droprate()
 
@@ -553,8 +557,8 @@ class MaterialPlanning(object):
             if float(stage['count']) > 1:
 #                print(stage['items'])
                 display_lst = [k + '(%s) '%v for k, v in sorted(stage['items'].items(), key=lambda x: (float(x[1])*self.item_value[x[0]]), reverse=True)][:5]
-                if stage['stage'] not in ['LS-5', 'CE-5']:
-                    display_lst = display_lst[1:] + [display_lst[0]]
+#                if stage['stage'] not in ['LS-5', 'CE-5']:
+#                    display_lst = display_lst[1:] + [display_lst[0]]
                 print(stage['stage'] + '(%s 次) ===> '%stage['count']
                                      + ', '.join(display_lst))
 
@@ -825,7 +829,7 @@ class MaterialPlanning(object):
         self.update_stage_processing('PR-D-1', 18)
         self.update_stage_processing('PR-D-2', 36)
 
-        self.update_stage_processing('AP-5', 30)
+#        self.update_stage_processing('AP-5', 30)
 
 
 

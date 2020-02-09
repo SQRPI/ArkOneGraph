@@ -22,7 +22,7 @@ if True:
     print_output = True if __name__ == '__main__' else False
     update = False if __name__ == '__main__' else True
     mp = MaterialPlanning(filter_stages=['S4-4', 'S6-4'] + ['AF-'+x for x in '12345678'],
-                          filter_freq=1,
+                          filter_freq=100,
                           update=update,
                           banned_stages={},
 #                          expValue=30,                 #1224更新后此参数无效, 使用经验需求来调节经验价值
