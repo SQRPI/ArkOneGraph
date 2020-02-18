@@ -33,7 +33,7 @@ def update_collection(collection):
                             'last_updated': update_time}
                   })
           else:
-              collection.update_one({'_id': itpem['_id']},
+              collection.update_one({'_id': item['_id']},
                   {'$set': {'credit_store_value': Decimal128('%.3f'%(100*mp.creditEffect[item['name']])),
                             'Notes': mp.Notes[item['name']],
                             'lowest_ap_stages': [{}],
