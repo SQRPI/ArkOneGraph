@@ -19,9 +19,11 @@ from utils import required_dct, owned_dct
 
 if True:
     prst = '1111111010' if __name__ == '__main__' else '0000110010'
+#    prst = '0000000000' if __name__ == '__main__' else '0000110010'
     print_output = True if __name__ == '__main__' else False
     update = False if __name__ == '__main__' else True
-    mp = MaterialPlanning(filter_stages=['S4-4', 'S6-4'] + ['AF-'+x for x in '12345678'],
+    SuiGuoHuaDeng = False if __name__ == '__main__' else False
+    mp = MaterialPlanning(filter_stages=['S4-4', 'S6-4'],
                           filter_freq=100,
                           update=update,
                           banned_stages={},
@@ -34,7 +36,8 @@ if True:
                           base_MTL_GOLD3=0,
                           base_gold=0,
                           stone_per_day=0,
-                          display_main_only=False
+                          display_main_only=True,
+                          SuiGuoHuaDeng=SuiGuoHuaDeng
                           )
 
 #    mpr = MPR()
@@ -45,3 +48,4 @@ if True:
 #    print(mp.effect['1-7'])
 #    mpr.get_plan(required_dct, owned_dct, print_output=True, outcome=True,
 #                                  gold_demand=True, exp_demand=True)
+

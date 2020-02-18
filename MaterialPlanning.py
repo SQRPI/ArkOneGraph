@@ -22,7 +22,7 @@ class MaterialPlanning(object):
                  banned_stages={},
 #                 expValue=30,
                  ConvertionDR=0.18,
-                 printSetting='111111111',
+                 printSetting='1111111111',
                  costLimit=135,
                  costType='stone',
                  base_exp=0,
@@ -30,7 +30,8 @@ class MaterialPlanning(object):
                  base_MTL_GOLD3=0,
                  is_supply_lt_60=True,
                  stone_per_day=0,
-                 display_main_only=True):
+                 display_main_only=True,
+                 SuiGuoHuaDeng=False):
         """
         Object initialization.
         Args:
@@ -61,6 +62,7 @@ class MaterialPlanning(object):
         self.banned_stages = banned_stages
         self.costType = costType
         self.display_main_only = display_main_only
+        self.SuiGuoHuaDeng = SuiGuoHuaDeng
         self.stage_times = ddict(int)
         self.Notes = dict()
         self.best_stage = dict()
@@ -77,10 +79,9 @@ class MaterialPlanning(object):
                 self.stage_times[dct['stage']['code']] = dct['times']
             if dct['times']>=filter_freq and dct['stage']['code'] not in filter_stages:
                 filtered_probs.append(dct)
-            else:
-                if dct['stage']['code'] not in needed_stage:
-                    print('%s未加入统计, 样本数%d'%(dct['stage']['code'], dct['times']))
-                    needed_stage.append(dct['stage']['code'])
+            elif dct['stage']['code'] not in needed_stage:
+                print('%8s的 %s 未加入统计, 样本数%d'%(dct['stage']['code'], dct['item']['name'], dct['times']))
+                needed_stage.append(dct['stage']['code'])
         material_probs['matrix'] = filtered_probs
         self.ConvertionDR = ConvertionDR
         self._pre_processing(material_probs)
@@ -170,7 +171,6 @@ class MaterialPlanning(object):
         self.cost_lst[0:5] = [10,15,20,25,30]
 #        self.cost_lst[self.stage_dct_rv['1-7']] = 9
         for k, stage in enumerate(self.stage_array):
-            print(stage)
             self.probs_matrix[k, self.item_dct_rv['龙门币']] = self.cost_lst[k]*12
         self.update_droprate()
 
@@ -199,6 +199,7 @@ class MaterialPlanning(object):
                 convertion[self.item_dct_rv[iname]] += outc_dct[iname]*self.ConvertionDR*outc_wgh[iname]/weight_sum
             convertion_outc_matrix.append(convertion)
             convertion_cost_lst.append(0)
+
 
         # 处理新材料
         for stage, item in 凝胶_update.items():
@@ -264,8 +265,8 @@ class MaterialPlanning(object):
                 if dct['times']>=filter_freq and dct['stage']['code'] not in filter_stages:
                     filtered_probs.append(dct)
             material_probs['matrix'] = filtered_probs
-
-        self._set_lp_parameters(*self._pre_processing(material_probs))
+        self._pre_processing(material_probs)
+        self._set_lp_parameters()
 
 
     def _get_plan_no_prioties(self, demand_lst, outcome=False, gold_demand=True, exp_demand=True):
@@ -485,13 +486,14 @@ class MaterialPlanning(object):
                    (data['effect'] > 0.99 and data['droprate'] >= 0.95*maxDropRate):
                     maxDropRate = max(maxDropRate, data['droprate'])
                     minExpect = min(minExpect, data['expected_cost'])
-                    self.best_stage[item][self.stage_class(data['effect'])].append({
+                    toAppend = {
                             'code': stage,
                             'drop_rate': self.to_Decimal128_2f(data['droprate']),
                             'efficiency': self.to_Decimal128_2f(data['effect']),
                             'ap_per_item': self.to_Decimal128_2f(data['expected_cost']),
                             'extra_drop': list(self.output_main_drop(stage, item))
-                            })
+                            }
+                    self.best_stage[item][self.stage_class(data['effect'])].append(toAppend)
 
     def output_droprate(self, stage):
         assert stage in self.stage_array
@@ -562,13 +564,14 @@ class MaterialPlanning(object):
                 print(stage['stage'] + '(%s 次) ===> '%stage['count']
                                      + ', '.join(display_lst))
 
-    def output_main_drop(self, stage_name, target_item, gate=0.1):
+    def output_main_drop(self, stage_name, target_item, gate=0.1, output=False):
         stageID = self.stage_dct_rv[stage_name]
         farm_cost = self.farm_cost[stageID]
         itemPercentage = [(self.item_value[self.item_array[k]]*v/farm_cost, self.item_array[k])
                             for k,v in enumerate(self.probs_matrix[stageID])]
         display_lst = [x for x in sorted(itemPercentage, key=lambda x:x[0], reverse=True) if x[0] > gate]
-
+        if output:
+            print(display_lst)
         for value, item in display_lst:
 #            sys.stdout.write('%.3f\t%s\n' % (value, item))
             if item != target_item:
@@ -586,7 +589,7 @@ class MaterialPlanning(object):
     def output_values(self):
         print('[collapse=材料价值]')
         for i, group in reversed(list(enumerate(self.values))):
-            display_lst = ['%s:%s'%(item['name'], item['value']) for item in group['items']]
+            display_lst = ['%s:%.6s'%(item['name'], self.item_value[item['name']]) for item in group['items']]
             if i == 5:
 #                display_lst.append('罗德岛物资补给:%.2f'%((self.effect['罗德岛物资补给'])*99-99*12*self.item_value['龙门币']))
                 print('特殊材料:')
@@ -597,7 +600,7 @@ class MaterialPlanning(object):
 #        for x in self.values:
 #            print('%s:\t %s' % (x['name'], x['value']))
 #        print('特殊材料:\n罗德岛物资补给:%.2f'%(self.effect['罗德岛物资补给']*99))
-        print('[/collapse]')
+        sys.stdout.write('[/collapse]')
 
     def output_green(self):
         self.greenTickets = {'招聘许可': self.item_value['招聘许可'] / Price['招聘许可'],
@@ -622,7 +625,7 @@ class MaterialPlanning(object):
         print('[collapse=绿票商店]')
         for k, v in sorted(self.greenTickets.items(), key=lambda x:x[1], reverse=True):
             print('%s:\t%.3f'%(k, v))
-        print('[/collapse]')
+        sys.stdout.write('[/collapse]')
 
     def output_yellow(self):
         self.yellowTickets = {'芯片助剂': self.item_value['芯片助剂'] / Price['芯片助剂']}
@@ -645,11 +648,11 @@ class MaterialPlanning(object):
         print('[collapse=黄票商店]')
         for k, v in sorted(self.yellowTickets.items(), key=lambda x:x[1], reverse=True):
             print('%s:\t%.3f'%(k, v))
-        print('[/collapse]')
+        sys.stdout.write('[/collapse]')
 
     def output_credit(self):
         self.creditEffect = dict()
-
+        self.item_value['碳'] = (self.item_value['家具零件']*4-200*self.item_value['龙门币'])/(1-0.5*self.ConvertionDR)
         for item, value in Credit.items():
             self.creditEffect[item] = self.item_value[item]/value
 
@@ -668,7 +671,7 @@ class MaterialPlanning(object):
         for item, value in sorted(self.creditEffect.items(), key=lambda x:x[1], reverse=True):
             print('%-20s:\t\t%.3f' % (item, value*100))
 #            sys.stdout.write('%s>'%item)
-        print('[/collapse]')
+        sys.stdout.write('[/collapse]')
 
     def output_effect(self):
         print('[collapse=关卡效率]')
@@ -681,7 +684,7 @@ class MaterialPlanning(object):
                 print('[b]%9s:\t%.2f\t(%d 样本)[/b]'%(k, v*100, self.stage_times[k]))
             else:
                 print('%9s:\t%.2f\t(%d 样本)'%(k, v*100, self.stage_times[k]))
-        print('[/collapse]')
+        sys.stdout.write('[/collapse]')
 
     def update_droprate_processing(self, stage, item, droprate, mode='add'):
         if stage not in self.stage_array:
@@ -698,23 +701,6 @@ class MaterialPlanning(object):
             self.probs_matrix[stageid][itemid] = droprate
         else:
             print('关卡%s, 材料%s, 模式错误添加失败'%(stage, item))
-
-    def update_convertion_processing(self, target_item: tuple, cost: int, source_item: dict, extraOutcome: dict):
-        '''
-            target_item: (item, itemCount)
-            cost: number of 龙门币
-            source_item: {item: itemCount}
-            extraOutcome: {outcome: {item: weight}, rate, totalWeight}
-        '''
-        toAppend = dict()
-        Outcome, rate, totalWeight = extraOutcome
-        toAppend['costs'] = [{'count':x[1]/target_item[1], 'id':self.item_dct_rv[x[0]], 'name':x[0]} for x in source_item.items()]
-        toAppend['extraOutcome'] = [{'count': rate/0.1/target_item[1], 'id': self.item_dct_rv[x[0]], 'name': x[0], 'weight': x[1]/target_item[1]} for x in Outcome.items()]
-        toAppend['goldCost'] = cost/target_item[1]
-        toAppend['id'] = self.item_dct_rv[target_item[0]]
-        toAppend['name'] = target_item[0]
-        toAppend['totalWeight'] = totalWeight
-        self.convertion_rules.append(toAppend)
 
     def update_stage_processing(self, stage_name: str, cost: int):
         self.stage_array.append(stage_name)
@@ -766,17 +752,38 @@ class MaterialPlanning(object):
             self.update_droprate_processing(stage, '经验', self.base_exp/self.everyday_cost*self.cost_lst[i], 'add')
             self.update_droprate_processing(stage, '赤金', self.base_MTL_GOLD3/500/self.everyday_cost*self.cost_lst[i], 'add')
 
+    def update_convertion_processing(self, target_item: tuple, cost: int, source_item: dict, extraOutcome: dict):
+        '''
+            target_item: (item, itemCount)
+            cost: number of 龙门币
+            source_item: {item: itemCount}
+            extraOutcome: {outcome: {item: weight}, rate, totalWeight}
+        '''
+        toAppend = dict()
+        Outcome, rate, totalWeight = extraOutcome
+        toAppend['costs'] = [{'count':x[1]/target_item[1], 'id':self.item_dct_rv[x[0]], 'name':x[0]} for x in source_item.items()]
+        toAppend['extraOutcome'] = [{'count': rate, 'id': self.item_dct_rv[x[0]], 'name': x[0], 'weight': x[1]/target_item[1]} for x in Outcome.items()]
+        toAppend['goldCost'] = cost/target_item[1]
+        toAppend['id'] = self.item_dct_rv[target_item[0]]
+        toAppend['name'] = target_item[0]
+        toAppend['totalWeight'] = totalWeight
+        self.convertion_rules.append(toAppend)
+
     def update_convertion(self):
-        self.update_convertion_processing(('技巧概要·卷3', 1), 0, {'技巧概要·卷2': 3}, ({'技巧概要·卷3':1}, 0.1, 1))
-        self.update_convertion_processing(('技巧概要·卷2', 1), 0, {'技巧概要·卷1': 3}, ({'技巧概要·卷2':1}, 0.1, 1))
+        # 考虑 岁过华灯 的影响
+        if self.SuiGuoHuaDeng:
+            weight = {self.item_array[item]: dr for item, dr in enumerate(self.probs_matrix[self.stage_dct_rv['岁过华灯']]) if self.item_array[item] != '龙门币'}
+            self.update_convertion_processing(('龙门币', 1), 1, {'岁过华灯': 1}, (weight, 1/0.18, 1))
+        self.update_convertion_processing(('技巧概要·卷3', 1), 0, {'技巧概要·卷2': 3}, ({'技巧概要·卷3':1}, 1, 1))
+        self.update_convertion_processing(('技巧概要·卷2', 1), 0, {'技巧概要·卷1': 3}, ({'技巧概要·卷2':1}, 1, 1))
         self.update_convertion_processing(('经验', 200), 0, {'基础作战记录': 1}, ({}, 0, 1))
         self.update_convertion_processing(('经验', 400), 0, {'初级作战记录': 1}, ({}, 0, 1))
         self.update_convertion_processing(('经验', 1000), 0, {'中级作战记录': 1}, ({}, 0, 1))
 #        self.update_convertion_processing(('经验', 2000), 0, {'高级作战记录': 1}, ({}, 0, 1))
         self.update_convertion_processing(('经验', 400), 0, {'赤金': 1}, ({}, 0, 1))
-        self.update_convertion_processing(('家具零件', 4), 200, {'碳': 1}, ({'碳': 1}, 0.05, 1))
-        self.update_convertion_processing(('家具零件', 8), 200, {'碳素': 1}, ({'碳素': 1}, 0.05, 1))
-        self.update_convertion_processing(('家具零件', 12), 200, {'碳素组': 1}, ({'碳素组': 1}, 0.05, 1))
+        self.update_convertion_processing(('家具零件', 4), 200, {'碳': 1}, ({'碳': 1}, 0.5, 1))
+        self.update_convertion_processing(('家具零件', 8), 200, {'碳素': 1}, ({'碳素': 1}, 0.5, 1))
+        self.update_convertion_processing(('家具零件', 12), 200, {'碳素组': 1}, ({'碳素组': 1}, 0.5, 1))
         self.update_convertion_processing(('重装芯片', 2), 0, {'医疗芯片': 3}, ({'重装芯片': 1, '医疗芯片':1,
                 '狙击芯片': 1, '术师芯片': 1, '先锋芯片': 1, '辅助芯片': 1, '近卫芯片': 1, '特种芯片': 1}, 0.165/0.18, 8))
         self.update_convertion_processing(('医疗芯片', 2), 0, {'重装芯片': 3}, ({'重装芯片': 1, '医疗芯片':1,
