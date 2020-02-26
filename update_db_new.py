@@ -35,6 +35,8 @@ mp = MaterialPlanning(filter_stages=['S4-4', 'S6-4'] + Event_Stages,
 mp.get_plan(required_dct, owned_dct, print_output=False, outcome=True,
                                   gold_demand=True, exp_demand=True)
 
+[mp_event.output_best_stage(x) for x in '123']
+[mp.output_best_stage(x) for x in '123']
 
 print('正在更新数据库')
 for item in collection.find():
