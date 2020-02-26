@@ -333,7 +333,6 @@ class MaterialPlanning(object):
         for k, v in deposited_dct.items():
             demand_lst[self.item_dct_rv[k]] -= v
 
-        stt = time.time()
         solution, dual_solution, excp_factor = self._get_plan_no_prioties(demand_lst, outcome, gold_demand, exp_demand)
         x, status = solution.x/excp_factor, solution.status
         y, self.slack = dual_solution.x, dual_solution.slack
@@ -341,9 +340,6 @@ class MaterialPlanning(object):
         n_looting, n_convertion = x[:len(self.cost_lst)], x[len(self.cost_lst):]
 
         cost = np.dot(x[:len(self.cost_lst)], self.cost_lst)
-
-        if print_output:
-            print(status_dct[status]+(' Computed in %.4f seconds,' %(time.time()-stt)))
 
         if status != 0:
             raise ValueError(status_dct[status])
@@ -483,7 +479,9 @@ class MaterialPlanning(object):
                    (data['expected_cost'] <= 0.8*minExpect) or\
                    (data['effect'] > 0.99 and data['droprate'] > 0.8*maxDropRate and level=='3')or\
                    (data['effect'] > 0.99 and data['expected_cost'] <1.25*minExpect and level=='3')or\
-                   (data['effect'] > 0.99 and data['droprate'] >= 0.95*maxDropRate):
+                   (data['effect'] > 0.99 and data['droprate'] >= 0.95*maxDropRate) or\
+                   ((stage == '4-4' or stage == '6-11') and item == '扭转醇') or\
+                   ((stage == 'S3-6' and item == '炽合金')):
                     maxDropRate = max(maxDropRate, data['droprate'])
                     minExpect = min(minExpect, data['expected_cost'])
                     toAppend = {
