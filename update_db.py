@@ -18,7 +18,7 @@ dbclient = pymongo.MongoClient(server)
 db = dbclient['Arknights_OneGraph']
 
 collection = db['Material']
-Event_Stages = []
+Event_Stages = ['SA-%d'%x for x in range(1,7)]
 update_time = parser.parse(time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime()))
 mp_event = MaterialPlanning(filter_stages=['S4-4', 'S6-4'],
                       filter_freq=100,

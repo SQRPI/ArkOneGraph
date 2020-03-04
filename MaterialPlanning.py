@@ -477,9 +477,9 @@ class MaterialPlanning(object):
             for stage, data in sorted_stages:
                 if (data['droprate'] >= 1.25*maxDropRate) or\
                    (data['expected_cost'] <= 0.8*minExpect) or\
-                   (data['effect'] > 0.99 and data['droprate'] > 0.8*maxDropRate and level=='3')or\
-                   (data['effect'] > 0.99 and data['expected_cost'] <1.25*minExpect and level=='3')or\
-                   (data['effect'] > 0.99 and data['droprate'] >= 0.95*maxDropRate) or\
+                   (data['effect'] > 0.99 and data['droprate'] > 0.667*maxDropRate and level=='3')or\
+                   (data['effect'] > 0.99 and data['expected_cost'] <1.5*minExpect and level=='3')or\
+                   (data['effect'] > 0.99 and data['droprate'] >= 0.9*maxDropRate) or\
                    ((stage == '4-4' or stage == '6-11') and item == '扭转醇') or\
                    ((stage == 'S3-6' and item == '炽合金')):
                     maxDropRate = max(maxDropRate, data['droprate'])
