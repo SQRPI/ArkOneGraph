@@ -43,8 +43,8 @@ for item in collection.find():
     if 'credit_store_value' in item:
         if item['name'] in mp.best_stage:
             collection.update_one({'_id': item['_id']},
-                {'$set': {'credit_store_value': {'event': Decimal128('%.3f'%(100*mp_event.creditEffect[item['name']])),
-                                                 'normal': Decimal128('%.3f'%(100*mp.creditEffect[item['name']]))},
+                {'$set': {'credit_store_value': {'event': '%.3f'%(100*mp_event.creditEffect[item['name']]),
+                                                 'normal': '%.3f'%(100*mp.creditEffect[item['name']])},
                           'Notes': {'event': mp_event.Notes[item['name']],
                                     'normal': mp.Notes[item['name']]},
                           'lowest_ap_stages': {'event': mp_event.best_stage[item['name']]['lowest_ap_stages'],
@@ -57,8 +57,8 @@ for item in collection.find():
                 })
         else:
             collection.update_one({'_id': item['_id']},
-                {'$set': {'credit_store_value': {'event': Decimal128('%.3f'%(100*mp_event.creditEffect[item['name']])),
-                                                 'normal': Decimal128('%.3f'%(100*mp.creditEffect[item['name']]))},
+                {'$set': {'credit_store_value': {'event': '%.3f'%(100*mp_event.creditEffect[item['name']]),
+                                                 'normal': '%.3f'%(100*mp.creditEffect[item['name']])},
                           'Notes': {'event': mp_event.Notes[item['name']],
                                     'normal': mp.Notes[item['name']]},
                           'lowest_ap_stages': {'event': [],
@@ -72,8 +72,8 @@ for item in collection.find():
     if 'green_ticket_value' in item:
         if item['name'] in mp.best_stage:
             collection.update_one({'_id': item['_id']},
-                {'$set': {'green_ticket_value': {'event': Decimal128('%.3f'%(100*mp_event.greenTickets[item['name']])),
-                                                 'normal': Decimal128('%.3f'%(100*mp.greenTickets[item['name']]))},
+                {'$set': {'green_ticket_value': {'event': '%.3f'%(mp_event.greenTickets[item['name']]),
+                                                 'normal': '%.3f'%(mp.greenTickets[item['name']])},
                           'Notes': {'event': mp_event.Notes[item['name']],
                                     'normal': mp.Notes[item['name']]},
                           'lowest_ap_stages': {'event': mp_event.best_stage[item['name']]['lowest_ap_stages'],
@@ -85,8 +85,8 @@ for item in collection.find():
                           'last_updated': update_time}})
         else:
             collection.update_one({'_id': item['_id']},
-                {'$set': {'green_ticket_value': {'event': Decimal128('%.3f'%(100*mp_event.greenTickets[item['name']])),
-                                                 'normal': Decimal128('%.3f'%(100*mp.greenTickets[item['name']]))},
+                {'$set': {'green_ticket_value': {'event': '%.3f'%(mp_event.greenTickets[item['name']]),
+                                                 'normal': '%.3f'%(mp.greenTickets[item['name']])},
                           'Notes': {'event': mp_event.Notes[item['name']],
                                     'normal': mp.Notes[item['name']]},
                           'lowest_ap_stages': {'event': [],
@@ -98,8 +98,8 @@ for item in collection.find():
                           'last_updated': update_time}})
     if 'golden_ticket_value' in item:
         collection.update_one({'_id': item['_id']},
-                {'$set': {'golden_ticket_value': {'event': Decimal128('%.3f'%(100*mp_event.yellowTickets[item['name']])),
-                                                 'normal': Decimal128('%.3f'%(100*mp.yellowTickets[item['name']]))},
+                {'$set': {'golden_ticket_value': {'event': '%.3f'%(mp_event.yellowTickets[item['name']]),
+                                                 'normal': '%.3f'%(mp.yellowTickets[item['name']])},
                           'Notes': {'event': mp_event.Notes[item['name']],
                                     'normal': mp.Notes[item['name']]},
                           'last_updated': update_time}})
