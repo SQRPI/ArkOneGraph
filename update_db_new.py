@@ -7,7 +7,6 @@ Created on Tue Jan 28 14:13:20 2020
 
 import pymongo
 from MaterialPlanning import MaterialPlanning
-from bson.decimal128 import Decimal128
 import time
 from dateutil import parser
 from utils import required_dct, owned_dct
@@ -22,7 +21,7 @@ Event_Stages = ['SA-%d'%x for x in range(1,6)]
 update_time = parser.parse(time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime()))
 mp_event = MaterialPlanning(filter_stages=['S4-4', 'S6-4'],
                       filter_freq=100,
-                      update=False,
+                      update=True,
                       printSetting='0000110010'
                       )
 mp_event.get_plan(required_dct, owned_dct, print_output=False, outcome=True,

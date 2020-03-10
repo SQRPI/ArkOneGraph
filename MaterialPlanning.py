@@ -4,7 +4,6 @@ from scipy.optimize import linprog
 from utils import Price, Credit, HeYue, HYO, 凝胶_group, 凝胶_update, 炽合金_group, 炽合金_update
 from collections import defaultdict as ddict
 import pandas as pd
-from bson.decimal128 import Decimal128
 
 global penguin_url
 penguin_url = 'https://penguin-stats.io/PenguinStats/api/'
@@ -445,9 +444,6 @@ class MaterialPlanning(object):
                                 'effect':           self.effect[stage]
                             }
 
-    def to_Decimal128_2f(self, num: int):
-        return Decimal128('%.2f'%num)
-
     def stage_class(self, effect):
         if effect>0.99:
             return 'lowest_ap_stages'
@@ -479,16 +475,14 @@ class MaterialPlanning(object):
                    (data['expected_cost'] <= 0.8*minExpect) or\
                    (data['effect'] > 0.99 and data['droprate'] > 0.667*maxDropRate and level=='3')or\
                    (data['effect'] > 0.99 and data['expected_cost'] <1.5*minExpect and level=='3')or\
-                   (data['effect'] > 0.99 and data['droprate'] >= 0.9*maxDropRate) or\
-                   ((stage == '4-4' or stage == '6-11') and item == '扭转醇') or\
-                   ((stage == 'S3-6' and item == '炽合金')):
+                   (data['effect'] > 0.99 and data['droprate'] >= 0.9*maxDropRate):
                     maxDropRate = max(maxDropRate, data['droprate'])
                     minExpect = min(minExpect, data['expected_cost'])
                     toAppend = {
                             'code': stage,
-                            'drop_rate': self.to_Decimal128_2f(data['droprate']),
-                            'efficiency': self.to_Decimal128_2f(data['effect']),
-                            'ap_per_item': self.to_Decimal128_2f(data['expected_cost']),
+                            'drop_rate': '%.3f'%data['droprate'],
+                            'efficiency': '%.3f'%data['effect'],
+                            'ap_per_item': '%.1f'%data['expected_cost'],
                             'extra_drop': list(self.output_main_drop(stage, item))
                             }
                     self.best_stage[item][self.stage_class(data['effect'])].append(toAppend)
