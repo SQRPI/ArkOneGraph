@@ -22,27 +22,27 @@ HeYue = dict()
 with open('data/HeYue.txt', 'r', encoding='utf8') as f:
     for line in f.readlines():
         name, value = line.split()
-        HeYue[name] = float(value)
+        HeYue[name] = float(eval(value))
 
 HYO = dict()
 with open('data/HeYueOrd.txt', 'r', encoding='utf8') as f:
     for line in f.readlines():
         name, value = line.split()
-        HYO[name] = float(value)
+        HYO[name] = float(eval(value))
 
 with codecs.open('data/materialIO.txt', 'r', 'utf-8') as f:
     material = eval(f.readline())
     required_dct = {x['name']: x['need'] for x in material}
     owned_dct = {x['name']: x['have'] for x in material}
 
-#with open('data/chips.csv', 'r', encoding='utf-8') as f:
-#    class_name = f.readline().strip().split(',')[1:]
-#    for _ in range(3):
-#        content = f.readline().strip().split(',')
-#        item_name, num = content[0], [int(x) for x in content[1:]]
-#        for i in range(8):
-#            required_dct.update({class_name[i] + item_name: num[i]})
-#
+with open('data/chips.csv', 'r', encoding='utf-8') as f:
+    class_name = f.readline().strip().split(',')[1:]
+    for _ in range(3):
+        content = f.readline().strip().split(',')
+        item_name, num = content[0], [int(x) for x in content[1:]]
+        for i in range(8):
+            required_dct.update({class_name[i] + item_name: num[i]})
+
 
 # 当前干员数量
 figureCount = {# 更新时间: 2020/1/18

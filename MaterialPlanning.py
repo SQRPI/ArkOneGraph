@@ -495,25 +495,28 @@ class MaterialPlanning(object):
 
     def output_WeiJiHeYue(self):
 
-        print('\n机密圣所(合约商店):')
         self.HeYueDict = {
-                '龙门币': 85 * self.item_value['龙门币'] / 1,
-                '中级作战记录': self.item_value['中级作战记录'] / 12,
-                '技巧概要·卷2(刷CA3)': 20/(3 + 1.18/3) / 15 *(1-self.gold_unit*1*12),
-                '技巧概要·卷2(不刷CA3)': self.item_value['技巧概要·卷2'] / 15,
+#                '龙门币': 85 * self.item_value['龙门币'] / 1,
+#                '中级作战记录': self.item_value['中级作战记录'] / 12,
+#                '技巧概要·卷2(刷CA3)': 20/(3 + 1.18/3) / 15 *(1-self.gold_unit*1*12),
+#                '技巧概要·卷2(不刷CA3)': self.item_value['技巧概要·卷2'] / 15,
 #                '技巧概要·卷2(不刷CA3)': 30/(4 + 3*1.18/3 + 3*1.18*1.18/3/3)*2/3*1.18 / 15*(1-self.gold_unit*1*12),
-                '芯片': (18-0.165*0.5*18/3)/(0.5 + 0.5*2/3)/60*(1-self.gold_unit*1*12)
+#                '芯片': (18-0.165*0.5*18/3)/(0.5 + 0.5*2/3)/60*(1-self.gold_unit*1*12)
                 }
         self.HYODict = {
-                '龙门币': 2000 * self.gold_unit / 15,
-                '中级作战记录': self.exp_unit*5*2 / 15,
-                '零件': 1/1.8,
-                '皮肤': 21*self.costLimit/3000
+                '柏喙': self.item_value['采购凭证'] * 600 / 300 
+#                '龙门币': 2000 * self.gold_unit / 15,
+#                '中级作战记录': self.exp_unit*5*2 / 15,
+#                '零件': 1/1.8,
+#                '皮肤': 21*self.costLimit/3000
                 }
         for item, value in HeYue.items():
             self.HeYueDict[item] = self.item_value[item] / value
+        self.item_value['高级作战记录'] = 2*self.item_value['中级作战记录']
         for item, value in HYO.items():
             self.HYODict[item] = self.item_value[item] / value
+
+        print('\n机密圣所(合约商店):')
         for k, v in sorted(self.HeYueDict.items(), key=lambda x:x[1], reverse=True):
             print('%s:\t%.3f'%(k, v))
         print('常规池')
