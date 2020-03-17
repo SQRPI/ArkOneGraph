@@ -43,8 +43,8 @@ for item in collection.find():
     print('\r已更新%s\t' % x, end='\t')
     if item['name'] in mp.HeYueDict or item['name'] in mp.HYODict:
         collection.update_one({'_id': item['_id']},
-                              {'$set': {'contingency_store_value': {'finite': '%.3f'%mp.HeYueDict[x] if x in mp.HeYueDict else '0.0',
-                                                                    'infinite': '%.3f'%mp.HYODict[x] if x in mp.HYODict else '0.0'}}
+                              {'$set': {'contingency_store_value': {'infinite': '%.3f'%mp.HeYueDict[x] if x in mp.HeYueDict else '0.0',
+                                                                    'finite': '%.3f'%mp.HYODict[x] if x in mp.HYODict else '0.0'}}
                 })
     if 'credit_store_value' in item:
         if item['name'] in mp.best_stage:
@@ -110,4 +110,4 @@ for item in collection.find():
                                     'normal': mp.Notes[item['name']]},
                           'last_updated': update_time}})
 
-print('更新完成.')
+print('\n更新完成.')
