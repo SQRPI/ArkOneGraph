@@ -17,7 +17,7 @@ class MaterialPlanning(object):
                  url_rules='formula',
                  path_stats='data/matrix.json',
                  path_rules='data/formula.json',
-                 update=False,
+                 update=False, 
                  banned_stages={},
 #                 expValue=30,
                  ConvertionDR=0.18,
@@ -30,7 +30,8 @@ class MaterialPlanning(object):
                  is_supply_lt_60=True,
                  stone_per_day=0,
                  display_main_only=True,
-                 SuiGuoHuaDeng=False):
+                 SuiGuoHuaDeng=False,
+                 ExpFromBase=False):
         """
         Object initialization.
         Args:
@@ -65,6 +66,7 @@ class MaterialPlanning(object):
         self.stage_times = ddict(int)
         self.Notes = dict()
         self.best_stage = dict()
+        self.ExpFromBase = ExpFromBase
 
         self.base_exp = base_exp
         self.base_gold = base_gold
@@ -74,7 +76,7 @@ class MaterialPlanning(object):
         filtered_probs = []
         needed_stage = []
         for dct in material_probs['matrix']:
-            if dct['times'] > self.stage_times[dct['stage']['code']] or self.stage_times[dct['stage']['code']] == 0:
+            if dct['times'] > self.stage_times[dct['stage']['code']] or self.stage_times[dct['stage']['code']] == 0 and dct['stage']['code'] not in filter_stages:
                 self.stage_times[dct['stage']['code']] = dct['times']
             if dct['times']>=filter_freq and dct['stage']['code'] not in filter_stages:
                 filtered_probs.append(dct)
@@ -113,7 +115,7 @@ class MaterialPlanning(object):
                             '3271': '辅助芯片', '3272': '辅助芯片组', '3273': '辅助双芯片',
                             '3281': '特种芯片', '3282': '特种芯片组', '3283': '特种双芯片',
                             '4006': '采购凭证', '7003': '寻访凭证', '32001': '芯片助剂',
-                            '7001': '招聘许可', '99990': '岁过华灯'
+                            '7001': '招聘许可'
                             }
         item_dct = {}
         stage_dct = {}
@@ -156,23 +158,15 @@ class MaterialPlanning(object):
 
         for dct in material_probs['matrix']:
             try:
-#                float(dct['item']['itemId'])
-#                print(dct['stage']['code'])
-#                if dct['stage']['code'] == 'CE-5':
-#                    print(dct)
                 self.probs_matrix[self.stage_dct_rv[dct['stage']['code']], self.item_dct_rv[dct['item']['name']]] = dct['quantity']/float(dct['times'])
 
                 self.cost_lst[self.stage_dct_rv[dct['stage']['code']]] = dct['stage']['apCost']
             except:
                 pass
 
-        # 添加LS, CE, S4-6, S5-2的掉落
-        #self.cost_lst[0:5] = [10,15,20,25,30]
-#        self.cost_lst[self.stage_dct_rv['1-7']] = 9
         for k, stage in enumerate(self.stage_array):
             self.probs_matrix[k, self.item_dct_rv['龙门币']] = self.cost_lst[k]*12
         self.update_droprate()
-
 
         # To build equavalence relationship from convert_rule_dct.
         self.update_convertion()
@@ -222,7 +216,6 @@ class MaterialPlanning(object):
 
         convertions_group = (np.array(convertion_matrix), np.array(convertion_outc_matrix), convertion_cost_lst)
         self.convertion_matrix, self.convertion_outc_matrix, self.convertion_cost_lst = convertions_group
-
 
     def _set_lp_parameters(self):
         """
@@ -279,9 +272,14 @@ class MaterialPlanning(object):
         """
         A_ub = (np.vstack([self.probs_matrix, self.convertion_outc_matrix])
                 if outcome else np.vstack([self.probs_matrix, self.convertion_matrix])).T
-        self.farm_cost = (self.cost_lst)
         if self.costType == 'time':
-            self.farm_cost = np.array(pd.read_csv('data/time.csv').time)
+            timedata = pd.read_csv('data/time.csv')
+            for k, v in enumerate(self.stage_array):
+                for l, s in enumerate(timedata.stage):
+                    if s[1:-1] == v:
+                        self.cost_lst[k] = timedata.time[l]
+                        break
+        self.farm_cost = (self.cost_lst)
         cost = (np.hstack([self.farm_cost, self.convertion_cost_lst]))
         assert np.any(self.farm_cost>=0)
 
@@ -456,7 +454,22 @@ class MaterialPlanning(object):
         筛选条件:  效率>0.99, 期望<1.2*最低期望
         效率<0.99, 掉率>当前最大掉率
         效率<0.99, 期望<当前最低期望
+               """
         '''
+       # 活动时和主线比较
+        MainStageMap = {
+                         '异铁组': ['S4-1'],
+                         '轻锰矿': ['6-2'],
+                         '研磨石': ['4-8'],
+                         '酮凝集组': ['4-5'],
+                         'RMA70-12': ['4-9'],
+                         '装置': ['3-4', '6-16'],
+                         '扭转醇': ['4-4', '6-11'],
+                         '糖组': ['4-2'],
+                         '凝胶': ['5-7'],
+                         '炽合金': ['S5-8'],
+                         '固源岩': ['1-7']
+                        }
         self.merge_droprate()
         for item in self.item_array:
             if len(self.item_id_array[self.item_dct_rv[item]]) != 5 or item == '芯片助剂':
@@ -469,13 +482,14 @@ class MaterialPlanning(object):
             # 根据效率排序
             sorted_stages = sorted(self.droprate[item].items(), key=lambda x: x[1]['effect'], reverse=True)
             maxDropRate = max([x['droprate'] for x in self.droprate[item].values() if x['effect'] > 0.99]+[0.1])
-            minExpect = min([x['expected_cost'] for x in self.droprate[item].values() if x['effect'] > 0.99]+[200])
+            minExpect = min([x['expected_cost'] for x in self.droprate[item].values() if x['effect'] > 0.99]+[200 if self.costType == 'stone' else 2000])
             for stage, data in sorted_stages:
                 if (data['droprate'] >= 1.25*maxDropRate) or\
-                   (data['expected_cost'] <= 0.8*minExpect) or\
-                   (data['effect'] > 0.99 and data['droprate'] > 0.667*maxDropRate and level=='3')or\
-                   (data['effect'] > 0.99 and data['expected_cost'] <1.5*minExpect and level=='3')or\
-                   (data['effect'] > 0.99 and data['droprate'] >= 0.9*maxDropRate):
+                   (data['expected_cost'] <= 0.85*minExpect) or\
+                   (data['effect'] > 0.98 and data['droprate'] > 0.667*maxDropRate and level=='3')or\
+                   (data['effect'] > 0.98 and data['expected_cost'] <1.5*minExpect and level=='3')or\
+                   (data['effect'] > 0.99 and data['droprate'] >= 0.9*maxDropRate)or\
+                   (item in MainStageMap and stage in MainStageMap[item]):
                     maxDropRate = max(maxDropRate, data['droprate'])
                     minExpect = min(minExpect, data['expected_cost'])
                     toAppend = {
@@ -821,6 +835,8 @@ class MaterialPlanning(object):
         self.update_convertion_processing(('术师双芯片', 1), 0, {'术师芯片组': 2, '经验': 1000/3, '采购凭证': 90}, ({}, 0, 1))
         self.update_convertion_processing(('狙击双芯片', 1), 0, {'狙击芯片组': 2, '经验': 1000/3, '采购凭证': 90}, ({}, 0, 1))
         self.update_convertion_processing(('先锋双芯片', 1), 0, {'先锋芯片组': 2, '经验': 1000/3, '采购凭证': 90}, ({}, 0, 1))
+        if self.ExpFromBase:
+            self.update_convertion_processing(('经验', 1000), 0, {'龙门币': 625}, ({}, 0, 1))
 
 
     def update_stage(self):

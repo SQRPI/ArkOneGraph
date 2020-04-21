@@ -23,7 +23,8 @@ if True:
     print_output = True if __name__ == '__main__' else False
     update = False if __name__ == '__main__' else True
     SuiGuoHuaDeng = False if __name__ == '__main__' else False
-    mp = MaterialPlanning(filter_stages=['S4-4', 'S6-4'],
+    ExpFromBase = False if __name__ == '__main__' else False
+    mp = MaterialPlanning(filter_stages=['S4-4', 'S6-4', '荒芜行动物资补给', '罗德岛物资补给', '岁过华灯'],
                           filter_freq=100,
                           update=update,
                           banned_stages={},
@@ -31,13 +32,14 @@ if True:
                           printSetting=prst,    #参照上面Print_functions的顺序设置, 1输出, 0不输出
                           ConvertionDR=0.18,            #副产物掉落率
                           costLimit=135,                 #理智上限
-#                          costType='time'
+                          #costType='time',
                           base_exp=0,
                           base_MTL_GOLD3=0,
                           base_gold=0,
                           stone_per_day=0,
                           display_main_only=True,
-                          SuiGuoHuaDeng=SuiGuoHuaDeng
+                          SuiGuoHuaDeng=SuiGuoHuaDeng,
+                          ExpFromBase = ExpFromBase
                           )
 
 #    mpr = MPR()
@@ -48,4 +50,3 @@ if True:
 #    print(mp.effect['1-7'])
 #    mpr.get_plan(required_dct, owned_dct, print_output=True, outcome=True,
 #                                  gold_demand=True, exp_demand=True)
-
