@@ -1,7 +1,7 @@
 import numpy as np
 import urllib.request, json, time, os, copy, sys
 from scipy.optimize import linprog
-from utils import Price, Credit, HeYue, HYO, 凝胶_group, 凝胶_update, 炽合金_group, 炽合金_update
+from utils import Price, Credit, HeYue, HYO, 凝胶_group, 凝胶_update, 炽合金_group, 炽合金_update, Orange
 from collections import defaultdict as ddict
 import pandas as pd
 
@@ -87,8 +87,8 @@ class MaterialPlanning(object):
         self.ConvertionDR = ConvertionDR
         self._pre_processing(material_probs)
         self._set_lp_parameters()
-        assert len(printSetting)==10, 'printSetting 长度应为10'
-        assert printSetting.count('1') + printSetting.count('0') == 10, 'printSetting 中只能含有0或1'
+        assert len(printSetting)==11, 'printSetting 长度应为10'
+        assert printSetting.count('1') + printSetting.count('0') == 11, 'printSetting 中只能含有0或1'
         self.printSetting = [int(x) for x in printSetting]
 
 
@@ -529,7 +529,8 @@ class MaterialPlanning(object):
         self.item_value['高级作战记录'] = 2*self.item_value['中级作战记录']
         for item, value in HYO.items():
             self.HYODict[item] = self.item_value[item] / value
-
+        if not self.print_output:
+            return
         print('\n机密圣所(合约商店):')
         for k, v in sorted(self.HeYueDict.items(), key=lambda x:x[1], reverse=True):
             print('%s:\t%.3f'%(k, v))
@@ -548,7 +549,8 @@ class MaterialPlanning(object):
             self.output_effect,
             self.output_best_stage,
             self.output_credit,
-            self.output_WeiJiHeYue]
+            self.output_WeiJiHeYue,
+            self.output_orange]
         for i, function in enumerate(Print_functions):
             if self.printSetting[i]:
                 Print_functions[i]()
@@ -635,6 +637,26 @@ class MaterialPlanning(object):
         for k, v in sorted(self.greenTickets.items(), key=lambda x:x[1], reverse=True):
             print('%s:\t%.3f'%(k, v))
         sys.stdout.write('[/collapse]')
+
+    def output_orange(self):
+        self.orangeTickets = {}
+        for item, value in Orange.items():
+            self.orangeTickets[item] = self.item_value[item] / value
+        self.orangeNotes = {}
+        for k, item in enumerate(sorted(self.orangeTickets.items(), key=lambda x:x[1], reverse=True)):
+            if k < 0.25*len(self.orangeTickets):
+                self.orangeNotes[item[0]] = 'red'
+            elif k < 0.5*len(self.orangeTickets):
+                self.orangeNotes[item[0]] = 'yellow'
+            elif k < 0.75*len(self.orangeTickets):
+                self.orangeNotes[item[0]] = 'green'
+            else:
+                self.orangeNotes[item[0]] = ''
+        print('[collapse=橙票商店]')
+        for k, v in sorted(self.orangeTickets.items(), key=lambda x:x[1], reverse=True):
+            print('%s:\t%.3f'%(k, v))
+        sys.stdout.write('[/collapse]')
+
 
     def output_yellow(self):
         self.yellowTickets = {'芯片助剂': self.item_value['芯片助剂'] / Price['芯片助剂']}

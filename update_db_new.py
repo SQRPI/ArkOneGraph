@@ -19,28 +19,34 @@ db = dbclient['Arknights_OneGraph']
 collection = db['Material_Event']
 Event_Stages = ['DM-%d'%x for x in range(1,9)]
 update_time = parser.parse(time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime()))
-mp_event = MaterialPlanning(filter_stages=['S4-4', 'S6-4'] + Event_Stages,
+mp_event = MaterialPlanning(filter_stages=['S4-4', 'S6-4'] + ['荒芜行动物资补给', '罗德岛物资补给', '岁过华灯'],
                       filter_freq=100,
-                      update=False,
-                      printSetting='0000111011'
+                      update=True,
+                      printSetting='00001110111'
                       )
 mp_event.get_plan(required_dct, owned_dct, print_output=False, outcome=True,
                                   gold_demand=True, exp_demand=True)
-mp = MaterialPlanning(filter_stages=['S4-4', 'S6-4'],
+mp = MaterialPlanning(filter_stages=['S4-4', 'S6-4'] + ['荒芜行动物资补给', '罗德岛物资补给', '岁过华灯'] + Event_Stages,
                       filter_freq=100,
-                      update=False,
-                      printSetting='0000110011'
+                      update=True,
+                      printSetting='00001110111'
                       )
 mp.get_plan(required_dct, owned_dct, print_output=False, outcome=True,
                                   gold_demand=True, exp_demand=True)
-
 [mp_event.output_best_stage(x) for x in '123']
 [mp.output_best_stage(x) for x in '123']
-
 print('正在更新数据库')
 for item in collection.find():
     x = item['name']
     #print('\r已更新%s\t' % x, end='\t')
+    if item['name'] in mp.orangeTickets:
+        collection.update_one({'_id': item['_id']},
+                  {'$set': {'orange_store_value': {'event': '%.3f'%mp_event.orangeTickets[item['name']],
+                                                   'normal': '%.3f'%mp.orangeTickets[item['name']]},
+                            'orange_note': {'event': mp_event.orangeNotes[item['name']],
+                                            'normal': mp.orangeNotes[item['name']]}
+                           }
+                  })
     if 'credit_store_value' in item:
         if item['name'] in mp.best_stage:
             collection.update_one({'_id': item['_id']},
@@ -52,9 +58,10 @@ for item in collection.find():
                                                'normal': mp.best_stage[item['name']]['lowest_ap_stages']},
                           'balanced_stages': {'event': mp_event.best_stage[item['name']]['balanced_stages'],
                                               'normal': mp.best_stage[item['name']]['balanced_stages']},
-                          'drop_rate_first_stages': {'event': mp.best_stage[item['name']]['drop_rate_first_stages'],
+                          'drop_rate_first_stages': {'event': mp_event.best_stage[item['name']]['drop_rate_first_stages'],
                                                      'normal': mp.best_stage[item['name']]['drop_rate_first_stages']},
-                          'last_updated': update_time}
+                          'last_updated': update_time
+                         }
                 })
         else:
             collection.update_one({'_id': item['_id']},
@@ -81,7 +88,7 @@ for item in collection.find():
                                                'normal': mp.best_stage[item['name']]['lowest_ap_stages']},
                           'balanced_stages': {'event': mp_event.best_stage[item['name']]['balanced_stages'],
                                               'normal': mp.best_stage[item['name']]['balanced_stages']},
-                          'drop_rate_first_stages': {'event': mp.best_stage[item['name']]['drop_rate_first_stages'],
+                          'drop_rate_first_stages': {'event': mp_event.best_stage[item['name']]['drop_rate_first_stages'],
                                                      'normal': mp.best_stage[item['name']]['drop_rate_first_stages']},
                           'last_updated': update_time}})
         else:

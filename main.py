@@ -18,13 +18,13 @@ from utils import required_dct, owned_dct
 '''
 
 if True:
-    prst = '1111111010' if __name__ == '__main__' else '0000110010'
+    prst = '11111110101' if __name__ == '__main__' else '00001100101'
 #    prst = '0000000000' if __name__ == '__main__' else '0000110010'
     print_output = True if __name__ == '__main__' else False
     update = False if __name__ == '__main__' else True
     SuiGuoHuaDeng = False if __name__ == '__main__' else False
     ExpFromBase = False if __name__ == '__main__' else False
-    mp = MaterialPlanning(filter_stages=['S4-4', 'S6-4', '荒芜行动物资补给', '罗德岛物资补给', '岁过华灯'],
+    mp = MaterialPlanning(filter_stages=['荒芜行动物资补给', '罗德岛物资补给', '岁过华灯'],
                           filter_freq=100,
                           update=update,
                           banned_stages={},
@@ -43,7 +43,6 @@ if True:
                           )
 
 #    mpr = MPR()
-
     res, mat1, mat2 = mp.get_plan(required_dct, owned_dct, print_output=print_output, outcome=True,
                                   gold_demand=True, exp_demand=True)
     print('发布前记得确认材料需求是否正确!')
