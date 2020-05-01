@@ -30,6 +30,13 @@ with open('data/HeYueOrd.txt', 'r', encoding='utf8') as f:
         name, value = line.split()
         HYO[name] = float(eval(value))
 
+Orange = dict()
+with open('data/orange.txt', 'r', encoding='utf-8') as f:
+    for line in f.readlines():
+        name, value = line.split()
+        Orange[name] = float(eval(value))
+
+
 with codecs.open('data/materialIO.txt', 'r', 'utf-8') as f:
     material = eval(f.readline())
     required_dct = {x['name']: x['need'] for x in material}
@@ -45,12 +52,12 @@ with open('data/chips.csv', 'r', encoding='utf-8') as f:
 
 
 # 当前干员数量
-figureCount = {# 更新时间: 2020/1/18
+figureCount = {# 更新时间: 2020/4/23 傀影池
                '1/2-Star': 7,
                '3-Star': 17,
-               '4-Star': 32+1,
-               '5-Star': 43+1+1,
-               '6-Star': 16+1+2
+               '4-Star': 37,
+               '5-Star': 50,
+               '6-Star': 22
               }
 exp_required = {
                 '1/2-Star': 9800,
@@ -77,17 +84,17 @@ required_dct.update({
 #                        '龙门币': 0,
 #                        '家具零件': 0
 #                    })
-required_dct.update({# 更新时间: 2020/1/18
-                        '技巧概要·卷1': 732,
-                        '技巧概要·卷2': 1614,
-                        '技巧概要·卷3': 5220
+required_dct.update({# 更新时间: 2020/4/23 傀影池
+                        '技巧概要·卷1': 818,
+                        '技巧概要·卷2': 1812,
+                        '技巧概要·卷3': 5911
                     })
-required_dct.update({ # 随便写的, 写几百就行
-                        '凝胶': 229,
-                        '聚合凝胶': 314,
-                        '炽合金': 223,
-                        '炽合金块': 335
-                    })
+#required_dct.update({ # 随便写的, 写几百就行
+#                        '凝胶': 229,
+#                        '聚合凝胶': 314,
+#                        '炽合金': 223,
+#                        '炽合金块': 335
+#                    })
 owned_dct.update({'经验': 0, '龙门币': 0, '技巧概要·卷3': 0,
                   '技巧概要·卷2': 0, '技巧概要·卷1': 0})
 
