@@ -36,6 +36,12 @@ mp.get_plan(required_dct, owned_dct, print_output=False, outcome=True,
 [mp_event.output_best_stage(x) for x in '123']
 [mp.output_best_stage(x) for x in '123']
 print('正在更新数据库')
+
+for k, v in sorted(mp.effect.items(), key=lambda x: x[1], reverse=True):
+    #            if v < 0.9:
+    #                break
+    db['Stages'].update_one({'code': k}, {'$set': {'efficiency': v , 'sampleSize': mp.stage_times[k]}},upsert=True)
+
 for item in collection.find():
     x = item['name']
     #print('\r已更新%s\t' % x, end='\t')
@@ -111,5 +117,6 @@ for item in collection.find():
                           'Notes': {'event': mp_event.Notes[item['name']],
                                     'normal': mp.Notes[item['name']]},
                           'last_updated': update_time}})
+
 
 print('\n更新完成.')
