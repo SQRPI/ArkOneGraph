@@ -463,12 +463,13 @@ class MaterialPlanning(object):
                          '研磨石': ['4-8'],
                          '酮凝集组': ['4-5'],
                          'RMA70-12': ['4-9'],
-                         '装置': ['3-4', '6-16'],
-                         '扭转醇': ['4-4', '6-11'],
+                         '装置': ['7-15'],
+                         '扭转醇': ['6-11'],
                          '糖组': ['4-2'],
                          '凝胶': ['5-7'],
                          '炽合金': ['S5-8'],
-                         '固源岩': ['1-7']
+                         '固源岩': ['1-7'],
+                         '聚酸酯组': ['7-4']
                         }
         self.merge_droprate()
         for item in self.item_array:
@@ -486,8 +487,8 @@ class MaterialPlanning(object):
             for stage, data in sorted_stages:
                 if (data['droprate'] >= 1.25*maxDropRate) or\
                    (data['expected_cost'] <= 0.85*minExpect) or\
-                   (data['effect'] > 0.98 and data['droprate'] > 0.667*maxDropRate and level=='3')or\
-                   (data['effect'] > 0.98 and data['expected_cost'] <1.5*minExpect and level=='3')or\
+                   (data['effect'] > 0.98 and data['droprate'] > 0.8*maxDropRate and level=='3')or\
+                   (data['effect'] > 0.98 and data['expected_cost'] <1.2*minExpect and level=='3')or\
                    (data['effect'] > 0.99 and data['droprate'] >= 0.9*maxDropRate)or\
                    (item in MainStageMap and stage in MainStageMap[item]):
                     maxDropRate = max(maxDropRate, data['droprate'])
