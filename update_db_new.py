@@ -11,22 +11,26 @@ import time
 from dateutil import parser
 from utils import required_dct, owned_dct
 
+update_time = parser.parse(time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime()))
+print(update_time)
 print('正在从企鹅物流获取数据...')
 server = open('data/server.txt', 'r').readline().strip()
 dbclient = pymongo.MongoClient(server)
 db = dbclient['Arknights_OneGraph']
 
+Filter_special_items = ['荒芜行动物资补给', '罗德岛物资补给', '岁过华灯', '32h战略配给']
+Filter_special_stages = ['S4-4', 'S6-4']
+
 collection = db['Material_Event']
 Event_Stages = ['DM-%d'%x for x in range(1,9)]
-update_time = parser.parse(time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime()))
-mp_event = MaterialPlanning(filter_stages=['S4-4', 'S6-4'] + ['荒芜行动物资补给', '罗德岛物资补给', '岁过华灯'],
+mp_event = MaterialPlanning(filter_stages=Filter_special_stages + Filter_special_items,
                       filter_freq=100,
                       update=True,
                       printSetting='00001110111'
                       )
 mp_event.get_plan(required_dct, owned_dct, print_output=False, outcome=True,
                                   gold_demand=True, exp_demand=True)
-mp = MaterialPlanning(filter_stages=['S4-4', 'S6-4'] + ['荒芜行动物资补给', '罗德岛物资补给', '岁过华灯'] + Event_Stages,
+mp = MaterialPlanning(filter_stages=Filter_special_stages + Filter_special_items + Event_Stages,
                       filter_freq=100,
                       update=True,
                       printSetting='00001110111'
@@ -36,10 +40,7 @@ mp.get_plan(required_dct, owned_dct, print_output=False, outcome=True,
 [mp_event.output_best_stage(x) for x in '123']
 [mp.output_best_stage(x) for x in '123']
 print('正在更新数据库')
-
 for k, v in sorted(mp.effect.items(), key=lambda x: x[1], reverse=True):
-    #            if v < 0.9:
-    #                break
     db['Stages'].update_one({'code': k}, {'$set': {'efficiency': v , 'sampleSize': mp.stage_times[k]}},upsert=True)
 
 for item in collection.find():
@@ -117,6 +118,5 @@ for item in collection.find():
                           'Notes': {'event': mp_event.Notes[item['name']],
                                     'normal': mp.Notes[item['name']]},
                           'last_updated': update_time}})
-
 
 print('\n更新完成.')
