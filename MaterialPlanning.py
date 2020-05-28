@@ -45,11 +45,11 @@ class MaterialPlanning(object):
         try:
             material_probs, self.convertion_rules = load_data(path_stats, path_rules)
         except:
-            print('exceptRequesting data from web resources (i.e., penguin-stats.io)...', end=' ')
+            print('获取本地文件失败...', end=' ')
             material_probs, self.convertion_rules = request_data(penguin_url+url_stats, penguin_url+url_rules, path_stats, path_rules)
             print('done.')
         if update:
-            print('Requesting data from web resources (i.e., penguin-stats.io)...', end=' ')
+            print('强制更新...', end=' ')
             material_probs, self.convertion_rules = request_data(penguin_url+url_stats, penguin_url+url_rules, path_stats, path_rules)
             print('done.')
 
@@ -414,6 +414,7 @@ class MaterialPlanning(object):
         self.item_value['芯片助剂'] = self.item_value['采购凭证'] * 90
         self.item_value['招聘许可'] = (20*self.公招出四星的概率+10)*self.item_value['糖组']/Price['糖组']+38/258*600/180*self.costLimit*self.公招出四星的概率 - self.item_value['龙门币']*774
         self.item_value['碳'] = (self.item_value['家具零件']*4-200*self.item_value['龙门币'])/(1-0.5*self.ConvertionDR)
+        self.item_value['先锋皇家信物'] = self.item_value['采购凭证'] * 2000
 
         for group in self.values:
             group["items"] = sorted(group["items"], key=lambda k: float(k['value']), reverse=True)
@@ -458,7 +459,7 @@ class MaterialPlanning(object):
         '''
        # 活动时和主线比较
         MainStageMap = {
-                         '异铁组': ['S4-1'],
+                         '异铁组': ['7-18'],
                          '轻锰矿': ['6-2'],
                          '研磨石': ['4-8'],
                          '酮凝集组': ['4-5'],

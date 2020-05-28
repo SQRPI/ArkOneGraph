@@ -41,11 +41,17 @@ mp.get_plan(required_dct, owned_dct, print_output=False, outcome=True,
 [mp.output_best_stage(x) for x in '123']
 print('正在更新数据库')
 for k, v in sorted(mp.effect.items(), key=lambda x: x[1], reverse=True):
+    print(f'已更新关卡{k}, 效率{100*v:.2f}', end=' ')
     db['Stages'].update_one({'code': k}, {'$set': {'efficiency': v , 'sampleSize': mp.stage_times[k]}},upsert=True)
 
 for item in collection.find():
     x = item['name']
-    #print('\r已更新%s\t' % x, end='\t')
+    print('已更新%s\t' % x, end='\t')
+    if item['name'] in mp.HeYueDict or item['name'] in mp.HYODict:
+        collection.update_one({'_id': item['_id']},
+                              {'$set': {'contingency_store_value': {'infinite': '%.3f'%mp.HeYueDict[x] if x in mp.HeYueDict else '0.0',
+                                                                    'finite': '%.3f'%mp.HYODict[x] if x in mp.HYODict else '0.0'}}
+                })
     if item['name'] in mp.orangeTickets:
         collection.update_one({'_id': item['_id']},
                   {'$set': {'orange_store_value': {'event': '%.3f'%mp_event.orangeTickets[item['name']],
