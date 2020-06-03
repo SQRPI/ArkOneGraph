@@ -115,7 +115,7 @@ class MaterialPlanning(object):
                             '3271': '辅助芯片', '3272': '辅助芯片组', '3273': '辅助双芯片',
                             '3281': '特种芯片', '3282': '特种芯片组', '3283': '特种双芯片',
                             '4006': '采购凭证', '7003': '寻访凭证', '32001': '芯片助剂',
-                            '7001': '招聘许可'
+                            '7001': '招聘许可', '2004': '高级作战记录'
                             }
         item_dct = {}
         stage_dct = {}
@@ -139,7 +139,6 @@ class MaterialPlanning(object):
         self.item_dct_rv = {v:k for k,v in enumerate(item_array)}
         self.item_id_to_name = {self.item_id_array[k]:item for k,item in enumerate(item_array)}
         self.item_name_to_id = {item:self.item_id_array[k] for k,item in enumerate(item_array)}
-
 
         # To construct mapping from stage id to stage names and vice versa.
         self.stage_array =[]
@@ -756,12 +755,13 @@ class MaterialPlanning(object):
         self.update_droprate_processing('CE-3', '龙门币', 4100, 'update')
         self.update_droprate_processing('CE-4', '龙门币', 5700, 'update')
         self.update_droprate_processing('CE-5', '龙门币', 7500, 'update')
+        '''
         self.update_droprate_processing('LS-1', '经验', 1600, 'update')
         self.update_droprate_processing('LS-2', '经验', 2800, 'update')
         self.update_droprate_processing('LS-3', '经验', 3900, 'update')
         self.update_droprate_processing('LS-4', '经验', 5900, 'update')
         self.update_droprate_processing('LS-5', '经验', 7400, 'update')
-
+        '''
         self.update_droprate_processing('AP-5', '采购凭证', 21, 'update')
 
         self.update_droprate_processing('PR-A-1', '重装芯片', 1/2, 'update')
@@ -814,7 +814,7 @@ class MaterialPlanning(object):
         self.update_convertion_processing(('经验', 200), 0, {'基础作战记录': 1}, ({}, 0, 1))
         self.update_convertion_processing(('经验', 400), 0, {'初级作战记录': 1}, ({}, 0, 1))
         self.update_convertion_processing(('经验', 1000), 0, {'中级作战记录': 1}, ({}, 0, 1))
-#        self.update_convertion_processing(('经验', 2000), 0, {'高级作战记录': 1}, ({}, 0, 1))
+        self.update_convertion_processing(('经验', 2000), 0, {'高级作战记录': 1}, ({}, 0, 1))
         self.update_convertion_processing(('经验', 400), 0, {'赤金': 1}, ({}, 0, 1))
         self.update_convertion_processing(('家具零件', 4), 200, {'碳': 1}, ({'碳': 1}, 0.5, 1))
         self.update_convertion_processing(('家具零件', 8), 200, {'碳素': 1}, ({'碳素': 1}, 0.5, 1))
