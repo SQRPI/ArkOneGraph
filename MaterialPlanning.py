@@ -84,6 +84,7 @@ class MaterialPlanning(object):
                 print('%8s的 %s 未加入统计, 样本数%d'%(dct['stage']['code'], dct['item']['name'], dct['times']))
                 needed_stage.append(dct['stage']['code'])
         material_probs['matrix'] = filtered_probs
+
         self.ConvertionDR = ConvertionDR
         self._pre_processing(material_probs)
         self._set_lp_parameters()
@@ -451,15 +452,14 @@ class MaterialPlanning(object):
 
     def output_best_stage(self, level='x'):
         '''
-        筛选条件:  效率>0.99, 期望<1.2*最低期望
-        效率<0.99, 掉率>当前最大掉率
-        效率<0.99, 期望<当前最低期望
-               """
+            筛选条件:  效率>0.99, 期望<1.2*最低期望
+            效率<0.99, 掉率>当前最大掉率
+            效率<0.99, 期望<当前最低期望
         '''
-       # 活动时和主线比较
+        # 活动时和主线比较
         MainStageMap = {
                          '异铁组': ['7-18'],
-                         '轻锰矿': ['6-2'],
+                         '轻锰矿': ['4-7'],
                          '研磨石': ['4-8'],
                          '酮凝集组': ['4-5'],
                          'RMA70-12': ['4-9'],
