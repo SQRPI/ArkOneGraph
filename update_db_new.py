@@ -22,7 +22,7 @@ Filter_special_items = ['荒芜行动物资补给', '罗德岛物资补给', '�
 Filter_special_stages = ['S4-4', 'S6-4']
 
 collection = db['Material_Event']
-Event_Stages = ['SV-%d'%x for x in range(1,8)]
+Event_Stages = ['TW-%d'%x for x in range(1,8)]
 mp_event = MaterialPlanning(filter_stages=Filter_special_stages + Filter_special_items,
                       filter_freq=100,
                       update=True,
