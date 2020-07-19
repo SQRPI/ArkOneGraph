@@ -9,7 +9,7 @@ import pymongo
 from MaterialPlanning import MaterialPlanning
 import time
 from dateutil import parser
-from utils import required_dctCN, owned_dct
+from utils import required_dctENJPKR, owned_dct
 
 update_time = parser.parse(time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime()))
 print(update_time)
@@ -21,29 +21,32 @@ db = dbclient['Arknights_OneGraph']
 Filter_special_items = ['荒芜行动物资补给', '罗德岛物资补给', '岁过华灯', '32h战略配给']
 Filter_special_stages = ['S4-4', 'S6-4']
 
-# Calculation for CN server
-collection = db['Material_Event']
-Event_Stages = ['TW-%d'%x for x in range(1,9)]
-mp_event = MaterialPlanning(filter_stages=Filter_special_stages + Filter_special_items,
+
+# Calculation for EN, JP and KR server
+collection = db['Material_ENJPKR']
+StagesNotAval = ['7-%d'%x for x in range(1,18)]+['S7-1','S7-2'] #chapter 7
+print(StagesNotAval)
+Event_Stages = ['OF-%d'%x for x in range(1,9)]
+mp_event = MaterialPlanning(filter_stages=Filter_special_stages + Filter_special_items+StagesNotAval,
                       filter_freq=100,
                       update=True,
-                      printSetting='00001110111',CCSeason=1
+                      printSetting='00001110110'
                       )
-mp_event.get_plan(required_dctCN, owned_dct, print_output=False, outcome=True,
+mp_event.get_plan(required_dctENJPKR, owned_dct, print_output=False, outcome=True,
                                   gold_demand=True, exp_demand=True)
-mp = MaterialPlanning(filter_stages=Filter_special_stages + Filter_special_items + Event_Stages,
+mp = MaterialPlanning(filter_stages=Filter_special_stages + Filter_special_items + Event_Stages+StagesNotAval,
                       filter_freq=100,
                       update=True,
-                      printSetting='00001110111',CCSeason=1
+                      printSetting='00001110110'
                       )
-mp.get_plan(required_dctCN, owned_dct, print_output=False, outcome=True,
+mp.get_plan(required_dctENJPKR, owned_dct, print_output=False, outcome=True,
                                   gold_demand=True, exp_demand=True)
 [mp_event.output_best_stage(x) for x in '123']
 [mp.output_best_stage(x) for x in '123']
-print('正在更新CN服数据库')
+print('正在更新EN, JP和KR服数据库')
 for k, v in sorted(mp.effect.items(), key=lambda x: x[1], reverse=True):
     print(f'已更新关卡{k}, 效率{100*v:.2f}', end=' ')
-    db['Stages'].update_one({'code': k}, {'$set': {'efficiency': v , 'sampleSize': mp.stage_times[k]}},upsert=True)
+    db['StagesENJPKR'].update_one({'code': k}, {'$set': {'efficiency': v , 'sampleSize': mp.stage_times[k]}},upsert=True)
 
 for item in collection.find():
     x = item['name']
@@ -51,15 +54,8 @@ for item in collection.find():
     collection.update_one({'_id': item['_id']},
                           {'$set': {'contingency_store_value': {'infinite': '%.3f'%mp.HeYueDict[x] if x in mp.HeYueDict else '0.0',
                                                                 'finite': '%.3f'%mp.HYODict[x] if x in mp.HYODict else '0.0'}}
-            })
-    if item['name'] in mp.orangeTickets:
-        collection.update_one({'_id': item['_id']},
-                  {'$set': {'orange_store_value': {'event': '%.3f'%mp_event.orangeTickets[item['name']],
-                                                   'normal': '%.3f'%mp.orangeTickets[item['name']]},
-                            'orange_note': {'event': mp_event.orangeNotes[item['name']],
-                                            'normal': mp.orangeNotes[item['name']]}
-                           }
-                  })
+            },upsert=True)
+
     if 'credit_store_value' in item:
         if item['name'] in mp.best_stage:
             collection.update_one({'_id': item['_id']},
@@ -75,7 +71,7 @@ for item in collection.find():
                                                      'normal': mp.best_stage[item['name']]['drop_rate_first_stages']},
                           'last_updated': update_time
                          }
-                })
+                },upsert=True)
         else:
             collection.update_one({'_id': item['_id']},
                 {'$set': {'credit_store_value': {'event': '%.3f'%(100*mp_event.creditEffect[item['name']]),
@@ -89,7 +85,7 @@ for item in collection.find():
                           'drop_rate_first_stages': {'event': [],
                                                'normal': []},
                           'last_updated': update_time}
-                })
+                },upsert=True)
     if 'green_ticket_value' in item:
         if item['name'] in mp.best_stage:
             collection.update_one({'_id': item['_id']},
@@ -103,7 +99,7 @@ for item in collection.find():
                                               'normal': mp.best_stage[item['name']]['balanced_stages']},
                           'drop_rate_first_stages': {'event': mp_event.best_stage[item['name']]['drop_rate_first_stages'],
                                                      'normal': mp.best_stage[item['name']]['drop_rate_first_stages']},
-                          'last_updated': update_time}})
+                          'last_updated': update_time}},upsert=True)
         else:
             collection.update_one({'_id': item['_id']},
                 {'$set': {'green_ticket_value': {'event': '%.3f'%(mp_event.greenTickets[item['name']]),
@@ -116,13 +112,13 @@ for item in collection.find():
                                                'normal': []},
                           'drop_rate_first_stages': {'event': [],
                                                'normal': []},
-                          'last_updated': update_time}})
+                          'last_updated': update_time}},upsert=True)
     if 'golden_ticket_value' in item:
         collection.update_one({'_id': item['_id']},
                 {'$set': {'golden_ticket_value': {'event': '%.3f'%(mp_event.yellowTickets[item['name']]),
                                                  'normal': '%.3f'%(mp.yellowTickets[item['name']])},
                           'Notes': {'event': mp_event.Notes[item['name']],
                                     'normal': mp.Notes[item['name']]},
-                          'last_updated': update_time}})
+                          'last_updated': update_time}},upsert=True)
 
-print('\nCN服更新完成.')
+print('\nEn,JP,KR服更新完成.')

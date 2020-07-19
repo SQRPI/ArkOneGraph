@@ -18,7 +18,7 @@ from utils import required_dct, owned_dct
 '''
 
 if True:
-    prst = '11111110101' if __name__ == '__main__' else '00001100101'
+    prst = '11111110111' if __name__ == '__main__' else '00001100101'
 #    prst = '0000000000' if __name__ == '__main__' else '0000110010'
     print_output = True if __name__ == '__main__' else False
     update = False if __name__ == '__main__' else True
