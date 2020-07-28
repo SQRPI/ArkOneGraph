@@ -202,7 +202,19 @@ with open('data/HeYueOrd1.txt', 'r', encoding='utf8') as f:
         name, value = line.split()
         HYO1[name] = float(eval(value))
 
-CCStores = [HeYue_1, HYO_1, HeYue0, HYO0, HeYue1, HYO1]
+HeYue2 = dict()
+with open('data/HeYue2.txt', 'r', encoding='utf8') as f:
+    for line in f.readlines():
+        name, value = line.split()
+        HeYue2[name] = float(eval(value))
+
+HYO2 = dict()
+with open('data/HeYueOrd2.txt', 'r', encoding='utf8') as f:
+    for line in f.readlines():
+        name, value = line.split()
+        HYO2[name] = float(eval(value))
+
+CCStores = [HeYue_1, HYO_1, HeYue0, HYO0, HeYue1, HYO1, HeYue2, HYO2]
 
 Orange = dict()
 with open('data/orange.txt', 'r', encoding='utf-8') as f:
