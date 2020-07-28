@@ -27,14 +27,14 @@ Event_Stages = ['TW-%d'%x for x in range(1,9)]
 mp_event = MaterialPlanning(filter_stages=Filter_special_stages + Filter_special_items,
                       filter_freq=100,
                       update=True,
-                      printSetting='00001110111',CCSeason=1
+                      printSetting='00001110111',CCSeason=2
                       )
 mp_event.get_plan(required_dctCN, owned_dct, print_output=False, outcome=True,
                                   gold_demand=True, exp_demand=True)
 mp = MaterialPlanning(filter_stages=Filter_special_stages + Filter_special_items + Event_Stages,
                       filter_freq=100,
                       update=True,
-                      printSetting='00001110111',CCSeason=1
+                      printSetting='00001110111',CCSeason=2
                       )
 mp.get_plan(required_dctCN, owned_dct, print_output=False, outcome=True,
                                   gold_demand=True, exp_demand=True)
@@ -44,10 +44,17 @@ print('正在更新CN服数据库')
 for k, v in sorted(mp.effect.items(), key=lambda x: x[1], reverse=True):
     print(f'已更新关卡{k}, 效率{100*v:.2f}', end=' ')
     db['Stages'].update_one({'code': k}, {'$set': {'efficiency': v , 'sampleSize': mp.stage_times[k]}},upsert=True)
+# print("有限池：")
+# for x in mp.HYODict.keys():
+#     print(x+':'+'%.3f'%mp.HYODict[x])
+# print("无限池：")
+# for x in mp.HeYueDict.keys():
+#     print(x+':'+'%.3f'%mp.HeYueDict[x])
 
 for item in collection.find():
     x = item['name']
     print('已更新%s\t' % x, end='\t')
+
     collection.update_one({'_id': item['_id']},
                           {'$set': {'contingency_store_value': {'infinite': '%.3f'%mp.HeYueDict[x] if x in mp.HeYueDict else '0.0',
                                                                 'finite': '%.3f'%mp.HYODict[x] if x in mp.HYODict else '0.0'}}
