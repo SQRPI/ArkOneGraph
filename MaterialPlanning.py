@@ -1,7 +1,7 @@
 import numpy as np
 import urllib.request, json, time, os, copy, sys
 from scipy.optimize import linprog
-from utils import Price, Credit, HeYue, HYO, 凝胶_group, 凝胶_update, 炽合金_group, 炽合金_update, Orange
+from utils import Price, Credit,  凝胶_group, 凝胶_update, 炽合金_group, 炽合金_update, Orange, CCStores
 from collections import defaultdict as ddict
 import pandas as pd
 
@@ -31,7 +31,8 @@ class MaterialPlanning(object):
                  stone_per_day=0,
                  display_main_only=True,
                  SuiGuoHuaDeng=False,
-                 ExpFromBase=False):
+                 ExpFromBase=False,
+                 CCSeason=1):
         """
         Object initialization.
         Args:
@@ -53,6 +54,9 @@ class MaterialPlanning(object):
             material_probs, self.convertion_rules = request_data(penguin_url+url_stats, penguin_url+url_rules, path_stats, path_rules)
             print('done.')
 
+
+
+
         self.exp_factor = 1
 
         self.公招出四星的概率 = 0.186
@@ -73,6 +77,7 @@ class MaterialPlanning(object):
         self.base_MTL_GOLD3 = base_MTL_GOLD3
         self.everyday_cost = (200-25*5)/7 + 240 + 60 * is_supply_lt_60 + stone_per_day*self.costLimit
 
+        self.ccseason = CCSeason
         filtered_probs = []
         needed_stage = []
         for dct in material_probs['matrix']:
@@ -509,6 +514,8 @@ class MaterialPlanning(object):
                 print(self.item_array[i], '\t%.3f' % (100*prob))
 
     def output_WeiJiHeYue(self):
+        HeYue=CCStores[self.ccseason*2+2]
+        HYO = CCStores[self.ccseason*2+3]
 
         self.HeYueDict = {
 #                '龙门币': 85 * self.item_value['龙门币'] / 1,
@@ -517,7 +524,7 @@ class MaterialPlanning(object):
 #                '技巧概要·卷2(不刷CA3)': self.item_value['技巧概要·卷2'] / 15,
 #                '技巧概要·卷2(不刷CA3)': 30/(4 + 3*1.18/3 + 3*1.18*1.18/3/3)*2/3*1.18 / 15*(1-self.gold_unit*1*12),
 #                '芯片': (18-0.165*0.5*18/3)/(0.5 + 0.5*2/3)/60*(1-self.gold_unit*1*12)
-                }
+                 }
         self.HYODict = {
                 '柏喙': self.item_value['采购凭证'] * 600 / 300 
 #                '龙门币': 2000 * self.gold_unit / 15,
