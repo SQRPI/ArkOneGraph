@@ -138,12 +138,13 @@ def aggregation(collection, required_dct, heroine_name):
     #                         '技巧概要·卷3': 5911
     #                     })
     required_dct.update(bookCount)
-    # required_dct.update({ # 随便写的, 写几百就行
-    #                        '凝胶': 229,
-    #                        '聚合凝胶': 314,
-    #                        '炽合金': 223,
-    #                        '炽合金块': 335
-    #                    })
+    required_dct.update({ # 扩大价值，否则橙票商店会崩溃
+                           '凝胶': 261,
+                           '聚合凝胶': 384,
+                           '炽合金': 248,
+                           '炽合金块': 366
+                       })
+    print(required_dct)
     return required_dct
 
 
