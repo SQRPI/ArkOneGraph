@@ -223,6 +223,11 @@ with open('data/orange.txt', 'r', encoding='utf-8') as f:
         name, value = line.split()
         Orange[name] = float(eval(value))
 
+Purple = dict()
+with open('data/purple.txt', 'r', encoding='utf-8') as f:
+    for line in f.readlines():
+        name, value = line.split()
+        Purple[name] = float(eval(value))
 
 with codecs.open('data/materialIO.txt', 'r', 'utf-8') as f:
     material = eval(f.readline())

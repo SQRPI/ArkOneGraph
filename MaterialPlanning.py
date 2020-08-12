@@ -1,7 +1,7 @@
 import numpy as np
 import urllib.request, json, time, os, copy, sys
 from scipy.optimize import linprog
-from utils import Price, Credit,  凝胶_group, 凝胶_update, 炽合金_group, 炽合金_update, Orange, CCStores
+from utils import Price, Credit,  凝胶_group, 凝胶_update, 炽合金_group, 炽合金_update, Orange, CCStores, Purple
 from collections import defaultdict as ddict
 import pandas as pd
 
@@ -93,8 +93,8 @@ class MaterialPlanning(object):
         self.ConvertionDR = ConvertionDR
         self._pre_processing(material_probs)
         self._set_lp_parameters()
-        assert len(printSetting)==11, 'printSetting 长度应为10'
-        assert printSetting.count('1') + printSetting.count('0') == 11, 'printSetting 中只能含有0或1'
+        assert len(printSetting)==12, 'printSetting 长度应为10'
+        assert printSetting.count('1') + printSetting.count('0') == 12, 'printSetting 中只能含有0或1'
         self.printSetting = [int(x) for x in printSetting]
 
 
@@ -121,7 +121,7 @@ class MaterialPlanning(object):
                             '3271': '辅助芯片', '3272': '辅助芯片组', '3273': '辅助双芯片',
                             '3281': '特种芯片', '3282': '特种芯片组', '3283': '特种双芯片',
                             '4006': '采购凭证', '7003': '寻访凭证', '32001': '芯片助剂',
-                            '7001': '招聘许可', '2004': '高级作战记录'
+                            '7001': '招聘许可', '2004': '高级作战记录','4003': '合成玉'
                             }
         item_dct = {}
         stage_dct = {}
@@ -416,6 +416,7 @@ class MaterialPlanning(object):
                 self.item_value[item] = y[i]
                 self.values[int(self.item_id_array[i][-1])-1]['items'].append(item_value)
         self.item_value['寻访凭证'] = self.costLimit * 600 / 180
+        self.item_value['合成玉'] = self.item_value['寻访凭证']/600
         self.item_value['芯片助剂'] = self.item_value['采购凭证'] * 90
         self.item_value['招聘许可'] = (20*self.公招出四星的概率+10)*self.item_value['糖组']/Price['糖组']+38/258*600/180*self.costLimit*self.公招出四星的概率 - self.item_value['龙门币']*774
         self.item_value['碳'] = (self.item_value['家具零件']*4-200*self.item_value['龙门币'])/(1-0.5*self.ConvertionDR)
@@ -558,7 +559,9 @@ class MaterialPlanning(object):
             self.output_best_stage,
             self.output_credit,
             self.output_WeiJiHeYue,
-            self.output_orange]
+            self.output_orange,
+            self.output_purple
+        ]
         for i, function in enumerate(Print_functions):
             if self.printSetting[i]:
                 Print_functions[i]()
@@ -663,6 +666,25 @@ class MaterialPlanning(object):
         print('[collapse=橙票商店]')
         for k, v in sorted(self.orangeTickets.items(), key=lambda x:x[1], reverse=True):
             print('%s:\t%.3f'%(k, v))
+        sys.stdout.write('[/collapse]')
+
+    def output_purple(self):
+        self.purpleTickets = {}
+        for item, value in Purple.items():
+            self.purpleTickets[item] = self.item_value[item] / value
+        self.purpleNotes = {}
+        # for k, item in enumerate(sorted(self.purpleTickets.items(), key=lambda x: x[1], reverse=True)):
+        #     if k < 0.25 * len(self.purpleTickets):
+        #         self.purpleNotes[item[0]] = 'red'
+        #     elif k < 0.5 * len(self.orangeTickets):
+        #         self.purpleNotes[item[0]] = 'yellow'
+        #     elif k < 0.75 * len(self.orangeTickets):
+        #         self.purpleNotes[item[0]] = 'green'
+        #     else:
+        #         self.purpleNotes[item[0]] = ''
+        print('[collapse=紫票商店]')
+        for k, v in sorted(self.purpleTickets.items(), key=lambda x: x[1], reverse=True):
+            print('%s:\t%.3f' % (k, v))
         sys.stdout.write('[/collapse]')
 
 
