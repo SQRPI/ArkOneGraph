@@ -32,13 +32,6 @@ mp_event = MaterialPlanning(filter_stages=Filter_special_stages + Filter_special
 mp_event.get_plan(required_dctCN, owned_dct, print_output=False, outcome=True,
                                   gold_demand=True, exp_demand=True)
 
-mp_event = MaterialPlanning(filter_stages=Filter_special_stages + Filter_special_items,
-                      filter_freq=100,
-                      update=True,
-                      printSetting='000000000001',CCSeason=2
-                      )
-mp_event.get_plan(required_dctCN, owned_dct, print_output=False, outcome=True,
-                                  gold_demand=True, exp_demand=True)
 mp = MaterialPlanning(filter_stages=Filter_special_stages + Filter_special_items + Event_Stages,
                       filter_freq=100,
                       update=True,
