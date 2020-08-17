@@ -19,25 +19,25 @@ dbclient = pymongo.MongoClient(server)
 db = dbclient['Arknights_OneGraph']
 
 Filter_special_items = ['荒芜行动物资补给', '罗德岛物资补给', '岁过华灯', '32h战略配给']
-Filter_special_stages = ['S4-4', 'S6-4']
+Filter_special_stages = ['S4-4', 'S6-4','S4-9']
 
 
 # Calculation for EN, JP and KR server
 collection = db['Material_ENJPKR']
-StagesNotAval = ['7-%d'%x for x in range(1,18)]+['S7-1','S7-2'] #chapter 7
+StagesNotAval = ['7-%d'%x for x in range(1,19)]+['S7-1','S7-2'] #chapter 7
 print(StagesNotAval)
 Event_Stages = ['OF-%d'%x for x in range(1,9)]
 mp_event = MaterialPlanning(filter_stages=Filter_special_stages + Filter_special_items+StagesNotAval,
                       filter_freq=100,
                       update=True,
-                      printSetting='00001110110'
+                      printSetting='000011101100'
                       )
 mp_event.get_plan(required_dctENJPKR, owned_dct, print_output=False, outcome=True,
                                   gold_demand=True, exp_demand=True)
 mp = MaterialPlanning(filter_stages=Filter_special_stages + Filter_special_items + Event_Stages+StagesNotAval,
                       filter_freq=100,
                       update=True,
-                      printSetting='00001110110'
+                      printSetting='000011101100'
                       )
 mp.get_plan(required_dctENJPKR, owned_dct, print_output=False, outcome=True,
                                   gold_demand=True, exp_demand=True)
