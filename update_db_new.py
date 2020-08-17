@@ -45,12 +45,7 @@ print('正在更新CN服数据库')
 for k, v in sorted(mp.effect.items(), key=lambda x: x[1], reverse=True):
     print(f'已更新关卡{k}, 效率{100*v:.2f}', end=' ')
     db['Stages'].update_one({'code': k}, {'$set': {'efficiency': v , 'sampleSize': mp.stage_times[k]}},upsert=True)
-# print("有限池：")
-# for x in mp.HYODict.keys():
-#     print(x+':'+'%.3f'%mp.HYODict[x])
-# print("无限池：")
-# for x in mp.HeYueDict.keys():
-#     print(x+':'+'%.3f'%mp.HeYueDict[x])
+
 
 for item in collection.find():
     x = item['name']
