@@ -23,7 +23,7 @@ Filter_special_stages = ['S4-4', 'S6-4','S4-9']
 
 # Calculation for CN server
 collection = db['Material_Event']
-Event_Stages = ['RI-%d'%x for x in range(1,10)]
+Event_Stages = ['FA-%d'%x for x in range(1, 9)]
 mp_event = MaterialPlanning(filter_stages=Filter_special_stages + Filter_special_items,
                       filter_freq=100,
                       update=True,

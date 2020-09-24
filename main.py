@@ -1,6 +1,6 @@
 from MaterialPlanning import MaterialPlanning
 #from MaterialPlanningRaw import MaterialPlanning as MPR
-from utils import required_dct, owned_dct
+from utils import required_dctCN, owned_dct
 
 '''
         Print_functions = [
@@ -18,7 +18,7 @@ from utils import required_dct, owned_dct
 '''
 
 if True:
-    prst = '11111110111' if __name__ == '__main__' else '00001100101'
+    prst = '111111101111' if __name__ == '__main__' else '000011001011'
 #    prst = '0000000000' if __name__ == '__main__' else '0000110010'
     print_output = True if __name__ == '__main__' else False
     update = False if __name__ == '__main__' else True
@@ -43,7 +43,7 @@ if True:
                           )
 
 #    mpr = MPR()
-    res, mat1, mat2 = mp.get_plan(required_dct, owned_dct, print_output=print_output, outcome=True,
+    res, mat1, mat2 = mp.get_plan(required_dctCN, owned_dct, print_output=print_output, outcome=True,
                                   gold_demand=True, exp_demand=True)
     print('发布前记得确认材料需求是否正确!')
 #    print(mp.effect['1-7'])
