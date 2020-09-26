@@ -6,7 +6,7 @@ Created on Tue Jan 28 14:13:20 2020
 """
 
 import pymongo
-from MaterialPlanning2 import MaterialPlanning
+from MaterialPlanning import MaterialPlanning
 import time
 from dateutil import parser
 from utils import required_dctCN, owned_dct
@@ -23,7 +23,7 @@ Filter_special_stages = ['S4-4', 'S6-4','S4-9']
 
 # Calculation for CN server
 collection = db['Material_Event']
-Event_Stages = ['RI-%d'%x for x in range(1,10)]
+Event_Stages = ['FA-%d'%x for x in range(1, 9)]
 mp_event = MaterialPlanning(filter_stages=Filter_special_stages + Filter_special_items,
                       filter_freq=100,
                       update=True,
@@ -42,7 +42,7 @@ mp.get_plan(required_dctCN, owned_dct, print_output=False, outcome=True,
 [mp_event.output_best_stage(x) for x in '123']
 [mp.output_best_stage(x) for x in '123']
 print('正在更新CN服数据库')
-for k, v in sorted(mp.effect.items(), key=lambda x: x[1], reverse=True):
+for k, v in sorted(mp_event.effect.items(), key=lambda x: x[1], reverse=True):
     print(f'已更新关卡{k}, 效率{100*v:.2f}', end=' ')
     db['Stages'].update_one({'code': k}, {'$set': {'efficiency': v , 'sampleSize': mp.stage_times[k]}},upsert=True)
 
