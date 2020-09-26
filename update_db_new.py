@@ -6,7 +6,7 @@ Created on Tue Jan 28 14:13:20 2020
 """
 
 import pymongo
-from MaterialPlanning import MaterialPlanning
+from MaterialPlanning2 import MaterialPlanning
 import time
 from dateutil import parser
 from utils import required_dctCN, owned_dct
@@ -23,7 +23,7 @@ Filter_special_stages = ['S4-4', 'S6-4','S4-9']
 
 # Calculation for CN server
 collection = db['Material_Event']
-Event_Stages = ['FA-%d'%x for x in range(1, 9)]
+Event_Stages = ['RI-%d'%x for x in range(1,10)]
 mp_event = MaterialPlanning(filter_stages=Filter_special_stages + Filter_special_items,
                       filter_freq=100,
                       update=True,
