@@ -18,7 +18,7 @@ server = open('data/server.txt', 'r').readline().strip()
 dbclient = pymongo.MongoClient(server)
 db = dbclient['Arknights_OneGraph']
 
-Filter_special_items = ['荒芜行动物资补给', '罗德岛物资补给', '岁过华灯', '32h战略配给']
+Filter_special_items = ['荒芜行动物资补给', '罗德岛物资补给', '岁过华灯', '32h战略配给', '感谢庆典物资补给']
 Filter_special_stages = ['S4-4', 'S6-4','S4-9']
 
 
