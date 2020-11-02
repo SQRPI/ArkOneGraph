@@ -138,12 +138,18 @@ def aggregation(collection, required_dct, heroine_name):
     #                         '技巧概要·卷3': 5911
     #                     })
     required_dct.update(bookCount)
-    if heroine_name !="阿米婭":
+    if heroine_name != "阿米婭":
         required_dct.update({ # 扩大价值，否则橙票商店会崩溃
                            '凝胶': 261,
                            '聚合凝胶': 384,
                            '炽合金': 248,
                            '炽合金块': 366
+                       })
+    if heroine_name == "阿米娅":
+        required_dct.update({ # 扩大价值，否则橙票商店会崩溃
+                          '晶体电路':   100,
+                          '晶体元件':   100,
+                          '晶体电子单元': 100
                        })
     print(required_dct)
     return required_dct
