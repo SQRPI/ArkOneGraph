@@ -56,6 +56,7 @@ if True:
 #    mpr = MPR()
     res, mat1, mat2 = mp.get_plan(required_dctCN, owned_dct, print_output=print_output, outcome=True,
                                   gold_demand=True, exp_demand=True)
+    mp.output_effect(filter='8-')
     print('发布前记得确认材料需求是否正确!')
 #    print(mp.effect['1-7'])
 #    mpr.get_plan(required_dct, owned_dct, print_output=True, outcome=True,

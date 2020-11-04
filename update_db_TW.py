@@ -9,7 +9,9 @@ import pymongo
 from MaterialPlanning import MaterialPlanning
 import time
 from dateutil import parser
-from utils import required_dctTW, owned_dct
+from utils import required_dctTW, owned_dct, aggregation, collectionTW
+
+aggregation(collectionTW, required_dctTW, "Amiya")
 
 update_time = parser.parse(time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime()))
 print(update_time)
@@ -25,7 +27,7 @@ Filter_special_stages = ['S4-4', 'S6-4', 'S4-9']+['S3-6','S4-10','S5-8','S5-7']
 # Calculation for TW server
 collection = db['Material_TW']
 StagesNotAval = ['7-%d'%x for x in range(1,19)]+['6-%d'%x for x in range(1,18)]+['S7-1','S7-2']+['S6-%d'%x for x in range(1,6)]
-
+StagesNotAval.extend(['R8-%d'%x for x in range(1, 12)] + ['M8-6', 'M8-7', 'M8-8'] + ['JT8-%d'%x for x in range(1, 4)])
 print(StagesNotAval)
 Event_Stages = ['OF-%d'%x for x in range(1,9)]
 mp_event = MaterialPlanning(filter_stages=Filter_special_stages + Filter_special_items+StagesNotAval,

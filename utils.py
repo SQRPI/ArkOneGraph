@@ -273,9 +273,9 @@ with open('data/item_table.json', encoding='UTF-8') as rawFile:
 
 # Aggregation on number of characters in DB for all 3 servers
 # It is AAAAAAAAAAAAAUUUUUUUTTTTTOOOOOOMMATIC!
-aggregation(collectionCN,required_dctCN,"阿米娅")
-aggregation(collectionENJPKR,required_dctENJPKR,"Amiya")
-aggregation(collectionTW,required_dctTW,"阿米婭")
+# aggregation(collectionCN,required_dctCN,"阿米娅")
+# aggregation(collectionENJPKR,required_dctENJPKR,"Amiya")
+# aggregation(collectionTW,required_dctTW,"阿米婭")
 
 owned_dct.update({'经验': 0, '龙门币': 0, '技巧概要·卷3': 0,
                   '技巧概要·卷2': 0, '技巧概要·卷1': 0})
