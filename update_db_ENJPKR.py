@@ -9,7 +9,9 @@ import pymongo
 from MaterialPlanning import MaterialPlanning
 import time
 from dateutil import parser
-from utils import required_dctENJPKR, owned_dct
+from utils import required_dctENJPKR, owned_dct, aggregation, collectionENJPKR
+
+aggregation(collectionENJPKR,required_dctENJPKR,"Amiya")
 
 update_time = parser.parse(time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime()))
 print(update_time)
@@ -25,6 +27,7 @@ Filter_special_stages = ['S4-4', 'S6-4','S4-9']
 # Calculation for EN, JP and KR server
 collection = db['Material_ENJPKR']
 StagesNotAval = ['7-%d'%x for x in range(1, 19)]+['S7-1', 'S7-2']+['RI-%d'%x for x in range(1, 9)] #chapter 7
+StagesNotAval.extend(['R8-%d'%x for x in range(1, 12)] + ['M8-6', 'M8-7', 'M8-8'] + ['JT8-%d'%x for x in range(1, 4)])
 print(StagesNotAval)
 Event_Stages = ['FA-%d'%x for x in range(1, 9)]
 mp_event = MaterialPlanning(filter_stages=Filter_special_stages + Filter_special_items+StagesNotAval,

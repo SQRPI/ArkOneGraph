@@ -734,11 +734,13 @@ class MaterialPlanning(object):
 #            sys.stdout.write('%s>'%item)
         sys.stdout.write('[/collapse]')
 
-    def output_effect(self):
+    def output_effect(self, filter=None):
         print('[collapse=关卡效率]')
         for k, v in sorted(self.effect.items(), key=lambda x:x[1], reverse=True):
 #            if v < 0.9:
 #                break
+            if filter and filter not in k:
+                continue
             if k[:2] in ['SK', 'AP', 'CE', 'LS', 'PR'] and self.display_main_only:
                 continue
             if 'AF' in k[:2]:

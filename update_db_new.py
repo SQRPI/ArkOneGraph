@@ -9,8 +9,9 @@ import pymongo
 from MaterialPlanning import MaterialPlanning
 import time
 from dateutil import parser
-from utils import required_dctCN, owned_dct
+from utils import required_dctCN, owned_dct, aggregation, collectionCN
 
+aggregation(collectionCN, required_dctCN, "阿米娅")
 update_time = parser.parse(time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime()))
 print(update_time)
 print('正在从企鹅物流获取数据...')
