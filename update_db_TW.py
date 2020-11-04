@@ -11,7 +11,7 @@ import time
 from dateutil import parser
 from utils import required_dctTW, owned_dct, aggregation, collectionTW
 
-aggregation(collectionTW, required_dctTW, "Amiya")
+aggregation(collectionTW, required_dctTW, "阿米婭")
 
 update_time = parser.parse(time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime()))
 print(update_time)
