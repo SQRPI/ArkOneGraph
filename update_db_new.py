@@ -28,7 +28,7 @@ Event_Stages = ['FA-%d'%x for x in range(1, 9)]
 mp_event = MaterialPlanning(filter_stages=Filter_special_stages + Filter_special_items,
                       filter_freq=100,
                       update=True,
-                      printSetting='000011101111',CCSeason=2
+                      printSetting='000011101111',CCSeason=3
                       )
 mp_event.get_plan(required_dctCN, owned_dct, print_output=False, outcome=True,
                                   gold_demand=True, exp_demand=True)
@@ -36,7 +36,7 @@ mp_event.get_plan(required_dctCN, owned_dct, print_output=False, outcome=True,
 mp = MaterialPlanning(filter_stages=Filter_special_stages + Filter_special_items + Event_Stages,
                       filter_freq=100,
                       update=True,
-                      printSetting='000011101111',CCSeason=2
+                      printSetting='000011101111',CCSeason=3
                       )
 mp.get_plan(required_dctCN, owned_dct, print_output=False, outcome=True,
                                   gold_demand=True, exp_demand=True)
