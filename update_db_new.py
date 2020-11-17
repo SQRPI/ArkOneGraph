@@ -11,6 +11,8 @@ import time
 from dateutil import parser
 from utils import required_dctCN, owned_dct, aggregation, collectionCN
 
+CCSeason = 3
+
 aggregation(collectionCN, required_dctCN, "阿米娅")
 update_time = parser.parse(time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime()))
 print(update_time)
@@ -27,19 +29,33 @@ collection = db['Material_Event']
 Event_Stages = ['FA-%d'%x for x in range(1, 9)]
 mp_event = MaterialPlanning(filter_stages=Filter_special_stages + Filter_special_items,
                       filter_freq=100,
-                      update=True,
-                      printSetting='000011101111',CCSeason=3
+                      update=False,
+                      printSetting='000011101111',CCSeason=CCSeason
                       )
 mp_event.get_plan(required_dctCN, owned_dct, print_output=False, outcome=True,
                                   gold_demand=True, exp_demand=True)
 
+
+mp_expFromBase = MaterialPlanning(filter_stages=Filter_special_stages + Filter_special_items + Event_Stages,
+                      filter_freq=100,
+                      update=False,
+                      printSetting='000011101111',CCSeason=CCSeason,
+                      ExpFromBase=True
+                      )
+mp_expFromBase.get_plan(required_dctCN, owned_dct, print_output=False, outcome=True,
+                                  gold_demand=True, exp_demand=True)
+
+
 mp = MaterialPlanning(filter_stages=Filter_special_stages + Filter_special_items + Event_Stages,
                       filter_freq=100,
-                      update=True,
-                      printSetting='000011101111',CCSeason=3
+                      update=False,
+                      printSetting='000011101111',CCSeason=CCSeason
                       )
 mp.get_plan(required_dctCN, owned_dct, print_output=False, outcome=True,
                                   gold_demand=True, exp_demand=True)
+
+# mp = mp_expFromBase
+
 [mp_event.output_best_stage(x) for x in '123']
 [mp.output_best_stage(x) for x in '123']
 print('正在更新CN服数据库')
