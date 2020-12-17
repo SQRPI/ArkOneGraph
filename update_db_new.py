@@ -21,7 +21,8 @@ server = open('data/server.txt', 'r').readline().strip()
 dbclient = pymongo.MongoClient(server)
 db = dbclient['Arknights_OneGraph']
 
-Filter_special_items = ['荒芜行动物资补给', '罗德岛物资补给', '岁过华灯', '32h战略配给', '感谢庆典物资补给']
+Filter_special_items = ['荒芜行动物资补给', '罗德岛物资补给', '岁过华灯', '32h战略配给', '感谢庆典物资补给',
+                        '应急理智小样', '黄铁行动物资补给', '利刃行动物资补给', '燃灰行动物资补给']
 Filter_special_stages = ['S4-4', 'S6-4','S4-9']
 
 # Calculation for CN server
@@ -29,7 +30,7 @@ collection = db['Material_Event']
 Event_Stages = ['MB-%d'%x for x in range(1, 9)]
 mp_event = MaterialPlanning(filter_stages=Filter_special_stages + Filter_special_items,
                       filter_freq=100,
-                      update=False,
+                      update=True,
                       printSetting='000011101111',CCSeason=CCSeason
                       )
 mp_event.get_plan(required_dctCN, owned_dct, print_output=False, outcome=True,

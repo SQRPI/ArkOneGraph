@@ -13,10 +13,12 @@ class MaterialPlanning(object):
     def __init__(self,
                  filter_freq=10,
                  filter_stages=[],
-                 url_stats='result/matrix?show_stage_details=true&show_item_details=true',
+                 url_stats='v2/result/matrix?show_stage_details=true&show_item_details=true',
                  url_rules='formula',
                  path_stats='data/matrix.json',
                  path_rules='data/formula.json',
+                 path_items='data/items.json',
+                 path_stages='data/stages.json',
                  update=False, 
                  banned_stages={},
 #                 expValue=30,
@@ -32,7 +34,9 @@ class MaterialPlanning(object):
                  display_main_only=True,
                  SuiGuoHuaDeng=False,
                  ExpFromBase=False,
-                 CCSeason=1):
+                 CCSeason=1,
+                 url_stages='v2/stages',
+                 url_items ='v2/items'):
         """
         Object initialization.
         Args:
@@ -44,17 +48,19 @@ class MaterialPlanning(object):
             path_rules: string. local path to the composing rules data.
         """
         try:
-            material_probs, self.convertion_rules = load_data(path_stats, path_rules)
+            material_probs, self.convertion_rules, self.item_list, self.stage_list = load_data(path_stats, path_rules, path_items, path_stages)
         except:
             print('获取本地文件失败...', end=' ')
-            material_probs, self.convertion_rules = request_data(penguin_url+url_stats, penguin_url+url_rules, path_stats, path_rules)
+            material_probs, self.convertion_rules, self.item_list, self.stage_list =\
+            request_data(penguin_url+url_stats, penguin_url+url_rules, penguin_url+url_items,
+                         penguin_url+url_stages, path_stats, path_rules, path_items, path_stages)
             print('done.')
         if update:
             print('强制更新...', end=' ')
-            material_probs, self.convertion_rules = request_data(penguin_url+url_stats, penguin_url+url_rules, path_stats, path_rules)
+            material_probs, self.convertion_rules, self.item_list, self.stage_list =\
+            request_data(penguin_url+url_stats, penguin_url+url_rules, penguin_url+url_items,
+                         penguin_url+url_stages, path_stats, path_rules, path_items, path_stages)
             print('done.')
-
-
 
 
         self.exp_factor = 1
@@ -79,15 +85,17 @@ class MaterialPlanning(object):
 
         self.ccseason = CCSeason
         filtered_probs = []
-        needed_stage = []
+        excluded_stages = set()
         for dct in material_probs['matrix']:
-            if dct['times'] > self.stage_times[dct['stage']['code']] or self.stage_times[dct['stage']['code']] == 0 and dct['stage']['code'] not in filter_stages:
-                self.stage_times[dct['stage']['code']] = dct['times']
-            if dct['times']>=filter_freq and dct['stage']['code'] not in filter_stages:
+            item, stage, times = self.item_list[dct['itemId']], self.stage_list[dct['stageId']]['code'], int(dct['times'])
+            if item in filter_stages: continue
+            if times > self.stage_times[stage] or self.stage_times[stage] == 0 and stage not in filter_stages:
+                self.stage_times[stage] = times
+            if times >= filter_freq and stage not in filter_stages:
                 filtered_probs.append(dct)
-            elif dct['stage']['code'] not in needed_stage:
-                print('%8s的 %s 未加入统计, 样本数%d'%(dct['stage']['code'], dct['item']['name'], dct['times']))
-                needed_stage.append(dct['stage']['code'])
+            elif stage not in excluded_stages:
+                print('%8s的 %s 未加入统计, 样本数%d'%(stage, item, times))
+                excluded_stages.add(stage)
         material_probs['matrix'] = filtered_probs
 
         self.ConvertionDR = ConvertionDR
@@ -111,7 +119,9 @@ class MaterialPlanning(object):
         additional_items = {'30135': u'D32钢', '30125': u'双极纳米片',
                             '30115': u'聚合剂', '00010':'经验', '4001':'龙门币',
                             '31014':'聚合凝胶', '31024':'炽合金块', '31013':'凝胶',
-                            '31023':'炽合金', '3303':'技巧概要·卷3', '00030':'家具零件',
+                            '31023':'炽合金',
+                            '3303':'技巧概要·卷3', '3302':'技巧概要·卷2', '3301':'技巧概要·卷1',
+                            '00030':'家具零件', '3003': '赤金',
                             '3211': '先锋芯片', '3212': '先锋芯片组', '3213': '先锋双芯片',
                             '3221': '近卫芯片', '3222': '近卫芯片组', '3223': '近卫双芯片',
                             '3231': '重装芯片', '3232': '重装芯片组', '3233': '重装双芯片',
@@ -121,26 +131,30 @@ class MaterialPlanning(object):
                             '3271': '辅助芯片', '3272': '辅助芯片组', '3273': '辅助双芯片',
                             '3281': '特种芯片', '3282': '特种芯片组', '3283': '特种双芯片',
                             '4006': '采购凭证', '7003': '寻访凭证', '32001': '芯片助剂',
-                            '7001': '招聘许可', '2004': '高级作战记录','4003': '合成玉',
+                            '7001': '招聘许可',
+                            '2004': '高级作战记录', '2003': '中级作战记录', '2002': '初级作战记录', '2001': '基础作战记录',
+                            '3112': '碳', '3113': '碳素', '3114': '碳素组',
+                            '4003': '合成玉',
                             '31033': '晶体元件', '31034': '晶体电路', '30145': '晶体电子单元'
                             }
+        additional_items = {k: v for v, k in additional_items.items()}
         item_dct = {}
         stage_dct = {}
+
         for dct in material_probs['matrix']:
-            item_dct[dct['item']['itemId']]=dct['item']['name']
-            stage_dct[dct['stage']['code']]=dct['stage']['code']
+            item_dct[self.item_list[dct['itemId']]] = dct['itemId']
+            stage_dct[self.stage_list[dct['stageId']]['code']] = dct['stageId']
         item_dct.update(additional_items)
         # To construct mapping from id to item names.
         item_array = []
         item_id_array = []
-        for k,v in item_dct.items():
+        for v, k in item_dct.items():
             try:
                 float(k)
                 item_array.append(v)
                 item_id_array.append(k)
             except:
                 pass
-#        print(item_array)
         self.item_array = np.array(item_array)
         self.item_id_array = np.array(item_id_array)
         self.item_dct_rv = {v:k for k,v in enumerate(item_array)}
@@ -149,11 +163,11 @@ class MaterialPlanning(object):
 
         # To construct mapping from stage id to stage names and vice versa.
         self.stage_array =[]
-        for k,v in stage_dct.items():
+        for v, k in stage_dct.items():
             if v not in self.banned_stages:
                 self.stage_array.append(v)
 
-        self.stage_dct_rv = {v:k for k,v in enumerate(self.stage_array)}
+        self.stage_dct_rv = {v: k for k, v in enumerate(self.stage_array)}
 
         # To format dropping records into sparse probability matrix
         self.cost_lst = np.zeros(len(self.stage_array))
@@ -164,11 +178,13 @@ class MaterialPlanning(object):
 
         for dct in material_probs['matrix']:
             try:
-                self.probs_matrix[self.stage_dct_rv[dct['stage']['code']], self.item_dct_rv[dct['item']['name']]] = dct['quantity']/float(dct['times'])
+                if dct['itemId'] == 'furni': continue
+                item, stage, cost = self.item_id_to_name[dct['itemId']], self.stage_list[dct['stageId']]['code'], int(self.stage_list[dct['stageId']]['cost'])
+                self.probs_matrix[self.stage_dct_rv[stage], self.item_dct_rv[item]] = dct['quantity'] / int(dct['times'])
 
-                self.cost_lst[self.stage_dct_rv[dct['stage']['code']]] = dct['stage']['apCost']
-            except:
-                pass
+                self.cost_lst[self.stage_dct_rv[stage]] = cost
+            except Exception as e:
+                print(f'材料{item}\t关卡{stage}({cost}) 添加失败 {e}')
 
         for k, stage in enumerate(self.stage_array):
             self.probs_matrix[k, self.item_dct_rv['龙门币']] = self.cost_lst[k]*12
@@ -335,7 +351,6 @@ class MaterialPlanning(object):
             demand_lst[self.item_dct_rv[k]] = v
         for k, v in deposited_dct.items():
             demand_lst[self.item_dct_rv[k]] -= v
-
         solution, dual_solution, excp_factor = self._get_plan_no_prioties(demand_lst, outcome, gold_demand, exp_demand)
         x, status = solution.x/excp_factor, solution.status
         y, self.slack = dual_solution.x, dual_solution.slack
@@ -915,6 +930,11 @@ class MaterialPlanning(object):
         self.update_stage_processing('LS-3', 20)
         self.update_stage_processing('LS-4', 25)
         self.update_stage_processing('LS-5', 30)
+        self.update_stage_processing('SK-1', 10)
+        self.update_stage_processing('SK-2', 15)
+        self.update_stage_processing('SK-3', 20)
+        self.update_stage_processing('SK-4', 25)
+        self.update_stage_processing('SK-5', 30)
         self.update_stage_processing('AP-5', 30)
 
 
@@ -934,7 +954,8 @@ def float2str(x, offset=0.5):
         out = '%d'%(int(x+offset))
     return out
 
-def request_data(url_stats, url_rules, save_path_stats, save_path_rules):
+def request_data(url_stats, url_rules, url_items, url_stages,
+                 save_path_stats, save_path_rules, save_path_items, save_path_stages):
     """
     To request probability and convertion rules from web resources and store at local.
     Args:
@@ -955,6 +976,14 @@ def request_data(url_stats, url_rules, save_path_stats, save_path_rules):
         os.mkdir(os.path.dirname(save_path_rules))
     except:
         pass
+    try:
+        os.mkdir(os.path.dirname(save_path_items))
+    except:
+        pass
+    try:
+        os.mkdir(os.path.dirname(save_path_stages))
+    except:
+        pass
     page_stats = urllib.request.Request(url_stats, headers=headers)
     with urllib.request.urlopen(page_stats) as url:
         material_probs = json.loads(url.read().decode())
@@ -967,9 +996,23 @@ def request_data(url_stats, url_rules, save_path_stats, save_path_rules):
         with open(save_path_rules, 'w') as outfile:
             json.dump(convertion_rules, outfile)
 
-    return material_probs, convertion_rules
+    page_stats = urllib.request.Request(url_items, headers=headers)
+    with urllib.request.urlopen(page_stats) as url:
+        item_list = json.loads(url.read().decode())
+        item_list = {x['itemId']: x['name'] for x in item_list}
+        with open(save_path_items, 'w') as outfile:
+            json.dump(item_list, outfile)
 
-def load_data(path_stats, path_rules):
+    page_stats = urllib.request.Request(url_stages, headers=headers)
+    with urllib.request.urlopen(page_stats) as url:
+        stage_list = json.loads(url.read().decode())
+        stage_list = {x['stageId']: {'code': x['code'], 'cost': x['apCost']} for x in stage_list}
+        with open(save_path_stages, 'w') as outfile:
+            json.dump(stage_list, outfile)
+
+    return material_probs, convertion_rules, item_list, stage_list
+
+def load_data(path_stats, path_rules, path_items, path_stages):
     """
     To load stats and rules data from local directories.
     Args:
@@ -984,4 +1027,9 @@ def load_data(path_stats, path_rules):
     with open(path_rules) as json_file:
         convertion_rules  = json.load(json_file)
 
-    return material_probs, convertion_rules
+    with open(path_items) as json_file:
+        items  = json.load(json_file)
+    with open(path_stages) as json_file:
+        stages  = json.load(json_file)
+
+    return material_probs, convertion_rules, items, stages
