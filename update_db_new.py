@@ -27,7 +27,7 @@ Filter_special_stages = ['S4-4', 'S6-4','S4-9']
 
 # Calculation for CN server
 collection = db['Material_Event']
-Event_Stages = ['MB-%d'%x for x in range(1, 9)]
+Event_Stages = ['BH-%d'%x for x in range(1, 9)]
 mp_event = MaterialPlanning(filter_stages=Filter_special_stages + Filter_special_items,
                       filter_freq=100,
                       update=True,
@@ -47,7 +47,8 @@ mp_expFromBase.get_plan(required_dctCN, owned_dct, print_output=False, outcome=T
                                   gold_demand=True, exp_demand=True)
 
 
-mp = MaterialPlanning(filter_stages=Filter_special_stages + Filter_special_items + Event_Stages,
+# mp = MaterialPlanning(filter_stages=Filter_special_stages + Filter_special_items + Event_Stages,
+mp = MaterialPlanning(filter_stages=Filter_special_stages + Filter_special_items,
                       filter_freq=100,
                       update=False,
                       printSetting='000011101111',CCSeason=CCSeason
