@@ -11,7 +11,7 @@ import time
 from dateutil import parser
 from utils import required_dctCN, owned_dct, aggregation, collectionCN
 
-CCSeason = 3
+CCSeason = 4
 
 aggregation(collectionCN, required_dctCN, "阿米娅")
 update_time = parser.parse(time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime()))
@@ -47,8 +47,8 @@ mp_expFromBase.get_plan(required_dctCN, owned_dct, print_output=False, outcome=T
                                   gold_demand=True, exp_demand=True)
 
 
-# mp = MaterialPlanning(filter_stages=Filter_special_stages + Filter_special_items + Event_Stages,
-mp = MaterialPlanning(filter_stages=Filter_special_stages + Filter_special_items,
+mp = MaterialPlanning(filter_stages=Filter_special_stages + Filter_special_items + Event_Stages,
+# mp = MaterialPlanning(filter_stages=Filter_special_stages + Filter_special_items,
                       filter_freq=100,
                       update=False,
                       printSetting='000011101111',CCSeason=CCSeason
