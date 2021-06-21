@@ -87,6 +87,8 @@ class MaterialPlanning(object):
         filtered_probs = []
         excluded_stages = set()
         for dct in material_probs['matrix']:
+            if dct['itemId'] == "4006":  # 打包 :(
+                continue
             item, stage, times = self.item_list[dct['itemId']], self.stage_list[dct['stageId']]['code'], int(dct['times'])
             if item in filter_stages: continue
             if times > self.stage_times[stage] or self.stage_times[stage] == 0 and stage not in filter_stages:
@@ -437,7 +439,6 @@ class MaterialPlanning(object):
         self.item_value['招聘许可'] = (20*self.公招出四星的概率+10)*self.item_value['糖组']/Price['糖组']+38/258*600/180*self.costLimit*self.公招出四星的概率 - self.item_value['龙门币']*774
         self.item_value['碳'] = (self.item_value['家具零件']*4-200*self.item_value['龙门币'])/(1-0.5*self.ConvertionDR)
         self.item_value['先锋皇家信物'] = self.item_value['采购凭证'] * 2000
-
         for group in self.values:
             group["items"] = sorted(group["items"], key=lambda k: float(k['value']), reverse=True)
 #        self.values = sorted(self.values, key=lambda x: float(x['value']), reverse=True)
@@ -551,8 +552,14 @@ class MaterialPlanning(object):
 #                '皮肤': 21*self.costLimit/3000
                 }
         for item, value in HeYue.items():
-            self.HeYueDict[item] = self.item_value[item] / value
+            if item == '近卫，狙击，辅助或重装芯片':
+                self.HeYueDict[item] = self.item_value['近卫芯片'] / value
+            elif item == '术师，特种，医疗或先锋芯片':
+                self.HeYueDict[item] = self.item_value['特种芯片']/ value
+            else:
+                self.HeYueDict[item] = self.item_value[item] / value
         self.item_value['高级作战记录'] = 2*self.item_value['中级作战记录']
+
         for item, value in HYO.items():
             self.HYODict[item] = self.item_value[item] / value
         if not self.print_output:
@@ -690,15 +697,15 @@ class MaterialPlanning(object):
         for item, value in Purple.items():
             self.purpleTickets[item] = self.item_value[item] / value
         self.purpleNotes = {}
-        # for k, item in enumerate(sorted(self.purpleTickets.items(), key=lambda x: x[1], reverse=True)):
-        #     if k < 0.25 * len(self.purpleTickets):
-        #         self.purpleNotes[item[0]] = 'red'
-        #     elif k < 0.5 * len(self.orangeTickets):
-        #         self.purpleNotes[item[0]] = 'yellow'
-        #     elif k < 0.75 * len(self.orangeTickets):
-        #         self.purpleNotes[item[0]] = 'green'
-        #     else:
-        #         self.purpleNotes[item[0]] = ''
+        for k, item in enumerate(sorted(self.purpleTickets.items(), key=lambda x: x[1], reverse=True)):
+            if k < 0.25 * len(self.purpleTickets):
+                self.purpleNotes[item[0]] = 'red'
+            elif k < 0.5 * len(self.orangeTickets):
+                self.purpleNotes[item[0]] = 'yellow'
+            elif k < 0.75 * len(self.orangeTickets):
+                self.purpleNotes[item[0]] = 'green'
+            else:
+                self.purpleNotes[item[0]] = ''
         print('[collapse=紫票商店]')
         for k, v in sorted(self.purpleTickets.items(), key=lambda x: x[1], reverse=True):
             print('%s:\t%.3f' % (k, v))

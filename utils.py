@@ -138,20 +138,19 @@ def aggregation(collection, required_dct, heroine_name):
     #                         '技巧概要·卷3': 5911
     #                     })
     required_dct.update(bookCount)
-    if heroine_name != "阿米婭":
-        required_dct.update({ # 扩大价值，否则橙票商店会崩溃
-                           '凝胶': 261,
-                           '聚合凝胶': 384,
-                           '炽合金': 248,
-                           '炽合金块': 366
-                       })
+    required_dct.update({ # 扩大价值，否则橙票商店会崩溃
+                       '凝胶': 261,
+                       '聚合凝胶': 384,
+                       '炽合金': 248,
+                       '炽合金块': 366
+                   })
     if heroine_name == "阿米娅":
         required_dct.update({ # 扩大价值，否则橙票商店会崩溃
                           '晶体电路':   100,
                           '晶体元件':   100,
                           '晶体电子单元': 100
                        })
-    print(required_dct)
+
     return required_dct
 
 
@@ -234,7 +233,31 @@ with open('data/HeYueOrd3.txt', 'r', encoding='utf8') as f:
         name, value = line.split()
         HYO3[name] = float(eval(value))
 
-CCStores = [HeYue_1, HYO_1, HeYue0, HYO0, HeYue1, HYO1, HeYue2, HYO2,HeYue3, HYO3]
+HeYue4 = dict()
+with open('data/HeYue4.txt', 'r', encoding='utf8') as f:
+    for line in f.readlines():
+        name, value = line.split()
+        HeYue4[name] = float(eval(value))
+
+HYO4 = dict()
+with open('data/HeYueOrd4.txt', 'r', encoding='utf8') as f:
+    for line in f.readlines():
+        name, value = line.split()
+        HYO4[name] = float(eval(value))
+
+HeYue5 = dict()
+with open('data/HeYue5.txt', 'r', encoding='utf8') as f:
+    for line in f.readlines():
+        name, value = line.split()
+        HeYue5[name] = float(eval(value))
+
+HYO5 = dict()
+with open('data/HeYueOrd5.txt', 'r', encoding='utf8') as f:
+    for line in f.readlines():
+        name, value = line.split()
+        HYO5[name] = float(eval(value))
+
+CCStores = [HeYue_1, HYO_1, HeYue0, HYO0, HeYue1, HYO1, HeYue2, HYO2,HeYue3, HYO3,HeYue4, HYO4,HeYue5, HYO5]
 
 Orange = dict()
 with open('data/orange.txt', 'r', encoding='utf-8') as f:
