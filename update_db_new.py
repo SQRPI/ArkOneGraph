@@ -16,7 +16,7 @@ import time
 from dateutil import parser
 from utils import required_dctCN, owned_dct, aggregation, collectionCN
 
-CCSeason = 5
+CCSeason = 10
 
 aggregation(collectionCN, required_dctCN, "阿米娅")
 update_time = parser.parse(time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime()))
@@ -32,8 +32,7 @@ InjectNew = True
 
 Filter_special_items = ['荒芜行动物资补给', '罗德岛物资补给', '岁过华灯', '32h战略配给', '感谢庆典物资补给',
                         '应急理智小样', '黄铁行动物资补给', '利刃行动物资补给', '燃灰行动物资补给']
-Filter_special_stages = ['S4-4', 'S6-4', 'S4-9']+['DM-%d'%x for x in range(1, 11)]+['GT-%d'%x for x in range(1, 11)]+\
-                        ['OF-F%d'%x for x in range(1, 11)]+['SV-%d'%x for x in range(1, 11)]+['WD-%d'%x for x in range(1, 11)]
+Filter_special_stages = ['S4-4', 'S6-4', 'S4-9']
 
 # Calculation for CN server
 collection = db['Material_Event']
@@ -53,7 +52,7 @@ Event_Stages = [(currrent_event+'-%d')%x for x in range(1, 9)]
 # Event planning w/out base
 mp_event = MaterialPlanning(filter_stages=Filter_special_stages + Filter_special_items,
                       filter_freq=100,
-                      update=True,
+                      update=False,
                       printSetting='111111111111',CCSeason=CCSeason
                       )
 mp_event.get_plan(required_dctCN, owned_dct, print_output=False, outcome=True,
@@ -62,7 +61,7 @@ mp_event.get_plan(required_dctCN, owned_dct, print_output=False, outcome=True,
 # Event planning w/ base
 mp_event_base = MaterialPlanning(filter_stages=Filter_special_stages + Filter_special_items,
                       filter_freq=100,
-                      update=True,
+                      update=False,
                       printSetting='111111111111',CCSeason=CCSeason,
                       ExpFromBase=True
                       )
@@ -103,8 +102,7 @@ def find_correct_stage_ID(code):
 
 
 # Write in the db for Stages
-print(mp.stage_list)
-print(mp.stage_dct_rv)
+print(mp.HeYueDict)
 print('正在更新CN服数据库')
 
 
@@ -131,16 +129,17 @@ for k, v in sorted(mp_event_base.effect.items(), key=lambda x: x[1], reverse=Tru
 
 # Write in the db, without considering income from base
 # Old version -> separate dbs
+print (mp.HeYueDict)
 for item in collection.find():
     x = item['name']
     print(x in mp.HeYueDict)
     print('已更新%s\t' % x, end='\t')
-    if x == "术师，特种，医疗或先锋芯片":
+    if x == "术师，特种，医疗或先锋芯片" and CCSeason >0:
         collection.update_one({'_id': item['_id']},
                               {'$set': {'contingency_store_value': {
                                   'infinite': '%.3f' % mp.HeYueDict[x],
                                   'finite': '0.0'}}}, upsert=InjectNew)
-    elif item == "近卫，狙击，辅助或重装芯片":
+    elif item == "近卫，狙击，辅助或重装芯片"and CCSeason >0:
         collection.update_one({'_id': item['_id']},
                               {'$set': {'contingency_store_value': {
                                   'infinite': '%.3f' % mp.HeYueDict[x],
@@ -233,7 +232,19 @@ for item in collection.find():
                                         }
                                }, upsert=InjectNew)
 
-
+    if item['name'] in ['切削原液','化合切削液', '精炼溶剂', '半自然溶剂']:
+        if item['name'] in mp.best_stage:
+            collection.update_one({'_id': item['_id']},
+                {'$set': {
+                          'lowest_ap_stages': {'event': mp_event.best_stage[item['name']]['lowest_ap_stages'],
+                                               'normal': mp.best_stage[item['name']]['lowest_ap_stages']},
+                          'balanced_stages': {'event': mp_event.best_stage[item['name']]['balanced_stages'],
+                                              'normal': mp.best_stage[item['name']]['balanced_stages']},
+                          'drop_rate_first_stages': {'event': mp_event.best_stage[item['name']]['drop_rate_first_stages'],
+                                                     'normal': mp.best_stage[item['name']]['drop_rate_first_stages']},
+                          'last_updated': update_time
+                         }
+                },upsert=InjectNew)
 
 
 

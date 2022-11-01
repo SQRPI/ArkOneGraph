@@ -141,15 +141,22 @@ def aggregation(collection, required_dct, heroine_name):
     required_dct.update({ # 扩大价值，否则橙票商店会崩溃
                        '凝胶': 261,
                        '聚合凝胶': 384,
-                       '炽合金': 248,
-                       '炽合金块': 366
+                        '炽合金': 248,
+                        '炽合金块': 366,
                    })
     if heroine_name == "阿米娅":
         required_dct.update({ # 扩大价值，否则橙票商店会崩溃
                           '晶体电路':   100,
                           '晶体元件':   100,
-                          '晶体电子单元': 100
-                       })
+                          '晶体电子单元': 100,
+                        '切削原液':350,
+                        '化合切削液': 250,
+                        '精炼溶剂':350,
+                        '半自然溶剂': 250,
+                            '烧结核凝晶':   100,
+                          '转质盐聚块':   100,
+                          '转质盐组': 100
+                                       })
 
     return required_dct
 
@@ -172,6 +179,18 @@ with open('data/creditPrice.txt', 'r', encoding='utf8') as f:
     for line in f.readlines():
         name, value = line.split()
         Credit[name] = float(value)
+
+HeYue_2 = dict()
+with open('data/HeYue-2.txt', 'r', encoding='utf8') as f:
+    for line in f.readlines():
+        name, value = line.split()
+        HeYue_2[name] = float(eval(value))
+
+HYO_2 = dict()
+with open('data/HeYueOrd-2.txt', 'r', encoding='utf8') as f:
+    for line in f.readlines():
+        name, value = line.split()
+        HYO_2[name] = float(eval(value))
 
 HeYue_1 = dict()
 with open('data/HeYue-1.txt', 'r', encoding='utf8') as f:
@@ -257,7 +276,69 @@ with open('data/HeYueOrd5.txt', 'r', encoding='utf8') as f:
         name, value = line.split()
         HYO5[name] = float(eval(value))
 
-CCStores = [HeYue_1, HYO_1, HeYue0, HYO0, HeYue1, HYO1, HeYue2, HYO2,HeYue3, HYO3,HeYue4, HYO4,HeYue5, HYO5]
+#     套用cc模板的连锁竞赛模式
+HeYue6 = dict()
+with open('data/HeYue6.txt', 'r', encoding='utf8') as f:
+    for line in f.readlines():
+        name, value = line.split()
+        HeYue6[name] = float(eval(value))
+
+HYO6 = dict()
+with open('data/HeYueOrd6.txt', 'r', encoding='utf8') as f:
+    for line in f.readlines():
+        name, value = line.split()
+        HYO6[name] = float(eval(value))
+
+
+HeYue7 = dict()
+with open('data/HeYue7.txt', 'r', encoding='utf8') as f:
+    for line in f.readlines():
+        name, value = line.split()
+        HeYue7[name] = float(eval(value))
+
+HYO7 = dict()
+with open('data/HeYueOrd7.txt', 'r', encoding='utf8') as f:
+    for line in f.readlines():
+        name, value = line.split()
+        HYO7[name] = float(eval(value))
+
+HeYue8 = dict()
+with open('data/HeYue8.txt', 'r', encoding='utf8') as f:
+    for line in f.readlines():
+        name, value = line.split()
+        HeYue8[name] = float(eval(value))
+
+HYO8 = dict()
+with open('data/HeYueOrd8.txt', 'r', encoding='utf8') as f:
+    for line in f.readlines():
+        name, value = line.split()
+        HYO8[name] = float(eval(value))
+
+HeYue9 = dict()
+with open('data/HeYue9.txt', 'r', encoding='utf8') as f:
+    for line in f.readlines():
+        name, value = line.split()
+        HeYue9[name] = float(eval(value))
+
+HYO9 = dict()
+with open('data/HeYueOrd9.txt', 'r', encoding='utf8') as f:
+    for line in f.readlines():
+        name, value = line.split()
+        HYO9[name] = float(eval(value))
+
+HeYue10 = dict()
+with open('data/HeYue10.txt', 'r', encoding='utf8') as f:
+    for line in f.readlines():
+        name, value = line.split()
+        HeYue10[name] = float(eval(value))
+
+HYO10 = dict()
+with open('data/HeYueOrd10.txt', 'r', encoding='utf8') as f:
+    for line in f.readlines():
+        name, value = line.split()
+        HYO10[name] = float(eval(value))
+
+CCStores = [HeYue_2, HYO_2,HeYue_1, HYO_1, HeYue0, HYO0, HeYue1, HYO1, HeYue2, HYO2,HeYue3, HYO3,HeYue4, HYO4,HeYue5, HYO5,HeYue6, HYO6,HeYue7, HYO7,HeYue8, HYO8,HeYue9, HYO9,HeYue10, HYO10]
 
 Orange = dict()
 with open('data/orange.txt', 'r', encoding='utf-8') as f:

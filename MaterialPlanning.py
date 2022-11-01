@@ -14,7 +14,7 @@ class MaterialPlanning(object):
                  filter_freq=10,
                  filter_stages=[],
                  url_stats='v2/result/matrix?show_stage_details=true&show_item_details=true',
-                 url_rules='formula',
+                 url_rules='v2/formula',
                  path_stats='data/matrix.json',
                  path_rules='data/formula.json',
                  path_items='data/items.json',
@@ -77,18 +77,27 @@ class MaterialPlanning(object):
         self.Notes = dict()
         self.best_stage = dict()
         self.ExpFromBase = ExpFromBase
-
         self.base_exp = base_exp
         self.base_gold = base_gold
         self.base_MTL_GOLD3 = base_MTL_GOLD3
-        self.everyday_cost = (200-25*5)/7 + 240 + 60 * is_supply_lt_60 + stone_per_day*self.costLimit
+        self.everyday_cost = (200-25*5)/7 + 240 + 80 * is_supply_lt_60 + stone_per_day*self.costLimit
 
         self.ccseason = CCSeason
         filtered_probs = []
         excluded_stages = set()
+        filter_perm_stages = []
         for dct in material_probs['matrix']:
             if dct['itemId'] == "4006":  # 打包 :(
                 continue
+
+            try:
+                if '_perm' in dct['stageId']:
+                    rep_stage_id = dct['stageId'][:-4] + 'rep'
+                    if self.stage_list[rep_stage_id]['existence']['CN']['exist']:
+                        continue
+            except KeyError as keyerror:
+                pass
+
             item, stage, times = self.item_list[dct['itemId']], self.stage_list[dct['stageId']]['code'], int(dct['times'])
             if item in filter_stages: continue
             if times > self.stage_times[stage] or self.stage_times[stage] == 0 and stage not in filter_stages:
@@ -137,7 +146,10 @@ class MaterialPlanning(object):
                             '2004': '高级作战记录', '2003': '中级作战记录', '2002': '初级作战记录', '2001': '基础作战记录',
                             '3112': '碳', '3113': '碳素', '3114': '碳素组',
                             '4003': '合成玉',
-                            '31033': '晶体元件', '31034': '晶体电路', '30145': '晶体电子单元'
+                            '31033': '晶体元件', '31034': '晶体电路', '30145': '晶体电子单元',
+                            '31053': '化合切削液', '31054': '切削原液',
+                            '31043': '半自然溶剂', '31044': '精炼溶剂',
+                            '30155': '烧结核凝晶', '31064': '转质盐聚块', '31063': '转质盐组'
                             }
         additional_items = {k: v for v, k in additional_items.items()}
         item_dct = {}
@@ -181,9 +193,10 @@ class MaterialPlanning(object):
         for dct in material_probs['matrix']:
             try:
                 if dct['itemId'] == 'furni': continue
+                if ('randomMaterial' in dct['stageId']) or ('randomMaterial' in dct['itemId']):continue
                 item, stage, cost = self.item_id_to_name[dct['itemId']], self.stage_list[dct['stageId']]['code'], int(self.stage_list[dct['stageId']]['cost'])
-                self.probs_matrix[self.stage_dct_rv[stage], self.item_dct_rv[item]] = dct['quantity'] / int(dct['times'])
 
+                self.probs_matrix[self.stage_dct_rv[stage], self.item_dct_rv[item]] = dct['quantity'] / int(dct['times'])
                 self.cost_lst[self.stage_dct_rv[stage]] = cost
             except Exception as e:
                 print(f'材料{item}\t关卡{stage}({cost}) 添加失败 {e}')
@@ -374,6 +387,7 @@ class MaterialPlanning(object):
             stage_name = self.stage_array[i]
             if stage_name[:2] in ['SK', 'AP', 'CE', 'LS', 'PR'] and self.display_main_only:
                 continue
+
             target_items = np.where(self.probs_matrix[i]>0.01)[0]
             items = {self.item_array[idx]: float2str(self.probs_matrix[i, idx]*t)
             for idx in target_items if len(self.item_id_array[idx])<=5}
@@ -493,7 +507,13 @@ class MaterialPlanning(object):
                          '炽合金': ['R8-7'],
                          '固源岩': ['1-7'],
                          '聚酸酯组': ['7-4'],
-                         '晶体元件': ['R8-11']
+                         '晶体元件': ['R8-11'],
+            '切削原液':['9-6'],
+        '化合切削液': ['9-6'],
+        '精炼溶剂':['9-18'],
+        '半自然溶剂': ['9-18'],
+            '转质盐组': ['11-15'],
+            '转质盐聚块': ['11-15']
                         }
         self.merge_droprate()
         for item in self.item_array:
@@ -533,8 +553,8 @@ class MaterialPlanning(object):
                 print(self.item_array[i], '\t%.3f' % (100*prob))
 
     def output_WeiJiHeYue(self):
-        HeYue=CCStores[self.ccseason*2+2]
-        HYO = CCStores[self.ccseason*2+3]
+        HeYue=CCStores[self.ccseason*2+4]
+        HYO = CCStores[self.ccseason*2+5]
 
         self.HeYueDict = {
 #                '龙门币': 85 * self.item_value['龙门币'] / 1,
@@ -551,6 +571,10 @@ class MaterialPlanning(object):
 #                '零件': 1/1.8,
 #                '皮肤': 21*self.costLimit/3000
                 }
+        print("Heyue items")
+        print(CCStores)
+        print(HeYue)
+        print(HYO)
         for item, value in HeYue.items():
             if item == '近卫，狙击，辅助或重装芯片':
                 self.HeYueDict[item] = self.item_value['近卫芯片'] / value
@@ -810,6 +834,7 @@ class MaterialPlanning(object):
         self.update_droprate_processing('CE-3', '龙门币', 4100, 'update')
         self.update_droprate_processing('CE-4', '龙门币', 5700, 'update')
         self.update_droprate_processing('CE-5', '龙门币', 7500, 'update')
+        self.update_droprate_processing('CE-6', '龙门币', 10000, 'update')
         '''
         self.update_droprate_processing('LS-1', '经验', 1600, 'update')
         self.update_droprate_processing('LS-2', '经验', 2800, 'update')
@@ -943,6 +968,8 @@ class MaterialPlanning(object):
         self.update_stage_processing('SK-4', 25)
         self.update_stage_processing('SK-5', 30)
         self.update_stage_processing('AP-5', 30)
+        self.update_stage_processing('CE-6', 36)
+        self.update_stage_processing('LS-6', 36)
 
 
 
@@ -1013,7 +1040,7 @@ def request_data(url_stats, url_rules, url_items, url_stages,
     page_stats = urllib.request.Request(url_stages, headers=headers)
     with urllib.request.urlopen(page_stats) as url:
         stage_list = json.loads(url.read().decode())
-        stage_list = {x['stageId']: {'code': x['code'], 'cost': x['apCost']} for x in stage_list}
+        stage_list = {x['stageId']: {'code': x['code'], 'cost': x['apCost'],'existence': x['existence']} for x in stage_list}
         with open(save_path_stages, 'w') as outfile:
             json.dump(stage_list, outfile)
 
